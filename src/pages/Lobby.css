@@ -1,0 +1,57 @@
+
+.lobby-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.room-card {
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.2s;
+  background: #f9f9f9;
+}
+
+.room-card:hover {
+  transform: translateY(-5px);
+  border-color: #007bff;
+}
+
+.room-card h3 { margin-top: 0; }
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.status-waiting { background: #d4edda; color: #155724; }
+.status-playing { background: #fff3cd; color: #856404; }
+
+.btn-enter {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 15px;
+  width: 100%;
+}
+
+.btn-enter:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}

@@ -1,0 +1,83 @@
+.game-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+.production-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #eee;
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+}
+
+.station-node {
+  text-align: center;
+  flex: 1;
+}
+
+.wip-arrow {
+  font-size: 24px;
+  color: #007bff;
+  font-weight: bold;
+}
+
+.wip-badge {
+  background: #ff4757;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.work-area {
+  background: white;
+  border: 3px solid #007bff;
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+}
+
+.click-button {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: none;
+  background: #007bff;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 10px 0 #0056b3;
+  transition: all 0.1s;
+}
+
+.click-button:active {
+  transform: translateY(5px);
+  box-shadow: 0 5px 0 #0056b3;
+}
+
+.click-button:disabled {
+  background: #ccc;
+  box-shadow: 0 10px 0 #999;
+  cursor: not-allowed;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 20px;
+  background: #eee;
+  border-radius: 10px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #2ed573;
+  transition: width 0.1s;
+}
