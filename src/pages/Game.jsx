@@ -1,132 +1,117 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
-import { ref, onValue, runTransaction, update } from 'firebase/database';
+import { ref, onValue, runTransaction } from 'firebase/database';
 import { useGame } from '../context/GameContext';
-import { useNavigate } from 'react-router-dom';
-import './Game.css'
+import './Game.css';
 
 const Game = () => {
   const { currentRoom, myStation } = useGame();
   const [roomData, setRoomData] = useState(null);
-  const [localClicks, setLocalClicks] = useState(0);
-  const navigate = useNavigate();
 
-  const CLICKS_PER_CONTAINER = 15;
+  const colors = { A: "blue-A", B: "green-B", C: "red-C", D: "grey-D", E: "purple-E" };
+
+  const specs = {
+    station_A: { stockNeeded: 1, wipNeeded: 0, nextWip: 'ab' },
+    station_B: { stockNeeded: 3, wipNeeded: 1, nextWip: 'bc', prevWip: 'ab' },
+    station_C: { stockNeeded: 1, wipNeeded: 1, nextWip: 'cd', prevWip: 'bc' },
+    station_D: { stockNeeded: 2, wipNeeded: 1, nextWip: 'de', prevWip: 'cd' },
+    station_E: { stockNeeded: 2, wipNeeded: 1, nextWip: 'finish', prevWip: 'de' }
+  };
 
   useEffect(() => {
-    if (!currentRoom || !myStation) {
-      navigate('/');
-      return;
-    }
-
+    if (!currentRoom) return;
     const roomRef = ref(db, `rooms/${currentRoom}`);
-    const unsubscribe = onValue(roomRef, (snapshot) => {
-      const data = snapshot.val();
-      setRoomData(data);
-      
-      // Se atingir 100, fim de jogo
-      if (data?.production?.finished_total >= 100) {
-        navigate('/results');
-      }
-    });
-
+    const unsubscribe = onValue(roomRef, (snapshot) => setRoomData(snapshot.val()));
     return () => unsubscribe();
-  }, [currentRoom, myStation, navigate]);
+  }, [currentRoom]);
 
-  const handleWork = () => {
-    const newClicks = localClicks + 1;
+  if (!roomData) return <div className="loading">Carregando...</div>;
+  const prod = roomData.production;
 
-    if (newClicks >= CLICKS_PER_CONTAINER) {
-      // COMPLETOU UM CONTAINER! Lógica de transferência:
-      completeContainer();
-      setLocalClicks(0);
-    } else {
-      setLocalClicks(newClicks);
+  // Monta o array visual baseado no seu requisito exato de herança
+  const getComposition = (letter, work) => {
+    let comp = [];
+    const hasWip = work.wipItems > 0;
+
+    if (letter === 'A') {
+      if (work.stockItems > 0) comp.push(colors.A);
+    } 
+    else if (letter === 'B') {
+      if (hasWip) comp.push(colors.A); // 1 de A
+      for (let i = 0; i < work.stockItems; i++) comp.push(colors.B); // + 3 de B
+    } 
+    else if (letter === 'C') {
+      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B); // 4 do WIP
+      if (work.stockItems > 0) comp.push(colors.C); // + 1 de C
+    } 
+    else if (letter === 'D') {
+      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B, colors.C); // 5 do WIP
+      for (let i = 0; i < work.stockItems; i++) comp.push(colors.D); // + 2 de D
+    } 
+    else if (letter === 'E') {
+      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B, colors.C, colors.D, colors.D); // 7 do WIP
+      for (let i = 0; i < work.stockItems; i++) comp.push(colors.E); // + 2 de E
     }
+    return comp;
   };
 
-  const completeContainer = () => {
-    const productionRef = ref(db, `rooms/${currentRoom}/production`);
-
-    runTransaction(productionRef, (currentData) => {
-      if (!currentData) return currentData;
-
-      if (myStation === 'station_A') {
-        currentData.wip_A_B++;
-      } else if (myStation === 'station_B') {
-        currentData.wip_A_B--;
-        currentData.wip_B_C++;
-      } else if (myStation === 'station_C') {
-        currentData.wip_B_C--;
-        currentData.wip_C_D++;
-      } else if (myStation === 'station_D') {
-        currentData.wip_C_D--;
-        currentData.wip_D_E++;
-      } else if (myStation === 'station_E') {
-        currentData.wip_D_E--;
-        currentData.finished_total++;
+  const handleAction = (type) => {
+    const sLetter = myStation.split('_')[1];
+    const mySpec = specs[myStation];
+    runTransaction(ref(db, `rooms/${currentRoom}/production`), (current) => {
+      if (!current) return current;
+      if (type === 'STOCK' && current.workAreas[sLetter].stockItems < mySpec.stockNeeded) {
+        current.stocks[sLetter]--;
+        current.workAreas[sLetter].stockItems++;
       }
-
-      return currentData;
+      if (type === 'WIP' && current.wips[mySpec.prevWip] > 0 && current.workAreas[sLetter].wipItems === 0) {
+        current.wips[mySpec.prevWip]--;
+        current.workAreas[sLetter].wipItems = 1;
+      }
+      if (type === 'SEND') {
+        if (mySpec.nextWip === 'finish') current.finished_total++;
+        else current.wips[mySpec.nextWip]++;
+        current.workAreas[sLetter] = { stockItems: 0, wipItems: 0 };
+      }
+      return current;
     });
   };
-
-  if (!roomData) return <div>Carregando fábrica...</div>;
-
-  const prod = roomData.production;
-  
-  // Lógica de trava do botão
-  const hasMaterial = 
-    myStation === 'station_A' || 
-    (myStation === 'station_B' && prod.wip_A_B > 0) ||
-    (myStation === 'station_C' && prod.wip_B_C > 0) ||
-    (myStation === 'station_D' && prod.wip_C_D > 0) ||
-    (myStation === 'station_E' && prod.wip_D_E > 0);
 
   return (
-    <div className="game-container">
-      <h2>Estação {myStation.split('_')[1]} - {currentRoom.toUpperCase()}</h2>
-      
-      {/* Visualização da Linha de Produção */}
-      <div className="production-line">
-        <div className="station-node">A <br/> <span className="wip-badge">{prod.wip_A_B}</span></div>
-        <div className="wip-arrow">→</div>
-        <div className="station-node">B <br/> <span className="wip-badge">{prod.wip_B_C}</span></div>
-        <div className="wip-arrow">→</div>
-        <div className="station-node">C <br/> <span className="wip-badge">{prod.wip_C_D}</span></div>
-        <div className="wip-arrow">→</div>
-        <div className="station-node">D <br/> <span className="wip-badge">{prod.wip_D_E}</span></div>
-        <div className="wip-arrow">→</div>
-        <div className="station-node">E <br/> <strong>{prod.finished_total}</strong></div>
-      </div>
+    <div className="game-screen">
+      <div className="factory-floor">
+        {['A', 'B', 'C', 'D', 'E'].map((letter) => {
+          const isMe = myStation === `station_${letter}`;
+          const work = prod.workAreas[letter];
+          const composition = getComposition(letter, work);
+          const isFull = composition.length === (specs[`station_${letter}`].stockNeeded + (letter === 'A' ? 0 : (letter === 'B' ? 1 : (letter === 'C' ? 4 : (letter === 'D' ? 5 : 7)))));
 
-      <div className="work-area">
-        <h3>{hasMaterial ? "TRABALHE!" : "AGUARDANDO MATERIAL..."}</h3>
-        
-        <div className="progress-bar-container">
-          <div 
-            className="progress-bar-fill" 
-            style={{ width: `${(localClicks / CLICKS_PER_CONTAINER) * 100}%` }}
-          ></div>
-        </div>
-
-        <button 
-          className="click-button"
-          onClick={handleWork}
-          disabled={!hasMaterial}
-        >
-          {localClicks} / {CLICKS_PER_CONTAINER} <br/>
-          CLIQUES
-        </button>
-
-        <p style={{ marginTop: '20px' }}>
-          {myStation === 'station_A' ? "Você é o início da linha" : `Estoque disponível para você: ${
-            myStation === 'station_B' ? prod.wip_A_B :
-            myStation === 'station_C' ? prod.wip_B_C :
-            myStation === 'station_D' ? prod.wip_C_D :
-            prod.wip_D_E
-          }`}
-        </p>
+          return (
+            <React.Fragment key={letter}>
+              <div className={`station-card ${isMe ? 'is-me' : ''}`}>
+                <div className="station-label">Estação {letter}</div>
+                <div className="work-bench">
+                  {/* Container E tem a borda especial tracejada */}
+                  <div className={`cube-grid ${letter === 'E' ? 'final-container' : ''}`}>
+                    {[...Array(9)].map((_, i) => (
+                      <div key={i} className={`slot ${composition[i] ? `filled ${composition[i]}` : 'empty'}`} />
+                    ))}
+                  </div>
+                </div>
+                <div className="station-controls">
+                  <button disabled={!isMe || work.stockItems >= specs[`station_${letter}`].stockNeeded || prod.stocks[letter] <= 0} onClick={() => handleAction('STOCK')}>Stock</button>
+                  {letter !== 'A' && <button disabled={!isMe || work.wipItems > 0 || prod.wips[specs[`station_${letter}`].prevWip] <= 0} onClick={() => handleAction('WIP')}>WIP</button>}
+                  <button className="btn-send" disabled={!isMe || !isFull} onClick={() => handleAction('SEND')}>Enviar</button>
+                </div>
+              </div>
+              {letter !== 'E' && (
+                <div className="wip-flow-indicator">
+                  <div className="wip-triangle"><span className="wip-value">{prod.wips[specs[`station_${letter}`].nextWip]}</span></div>
+                </div>
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
     </div>
   );
