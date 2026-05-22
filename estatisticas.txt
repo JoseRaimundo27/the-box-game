@@ -1,0 +1,27 @@
+Sempre que a estação E envia uma caixinha tiramos uma foto para o history com:
+-count: número de caixinhas já entregadas (começa em 0 e vai incrementando até 100);
+-wip_total: soma de todos os wips
+-timestamp: date.now()
+
+Lead Time Total é a diferença da última vez que a Estação E envia a última caixinha (SEND) menos o tempo da primeira vez que a Estação E envia um produto final (SEND).
+
+Impacto Financeiro é a multiplicação do wip_total por 10 (como se 10 fosse o custo por wip).
+
+AVG Wip é a divisão do wip_total pela quantidade de caixinha enviadas pela Estação E.
+
+CURVAS:
+Curva S: é o gráfico de count pelo timestamp.
+
+Acumulo de Estoque(WIP):é o gráfico wip_total pelo timestamp
+
+TODO:
+Tem que ter um custo por caixinha Valor da caixinha variavel (1-5), custo que estão na mesa (estação de trabalho) e custo do que está no WIP in real time. 
+
+Criar um botao para dar as estatisticas antes, com uma porcentagem
+
+adicionar uma caixinha com total number of wip 
+
+Mostrar o Acúmulo de estoques como gráfico de barras
+
+Traduzir para espanhol*/ingles/portugues
+

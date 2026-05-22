@@ -1,0 +1,163 @@
+{
+  "rooms": {
+    "sala_01": {
+      "metadata": { "createdAt": "", "leaderId": "", "status": "waiting" },
+      "players": {
+        "station_A": { "name": "", "uid": "" },
+        "station_B": { "name": "", "uid": "" },
+        "station_C": { "name": "", "uid": "" },
+        "station_D": { "name": "", "uid": "" },
+        "station_E": { "name": "", "uid": "" }
+      },
+      "production": {
+        "stocks": { "A": 100, "B": 300, "C": 100, "D": 200, "E": 300 },
+        "wips": { "ab": 0, "bc": 0, "cd": 0, "de": 0 },
+        "workAreas": {
+          "A": { "stockItems": 0, "wipItems": 0 },
+          "B": { "stockItems": 0, "wipItems": 0 },
+          "C": { "stockItems": 0, "wipItems": 0 },
+          "D": { "stockItems": 0, "wipItems": 0 },
+          "E": { "stockItems": 0, "wipItems": 0 }
+        },
+        "finished_total": 0
+      },
+      "history": {
+  "1714400000000": { "count": 1, "wip_total": 2, "timestamp": 1714400000000 },
+  "1714400100000": { "count": 15, "wip_total": 8, "timestamp": 1714400100000 },
+  "1714400200000": { "count": 45, "wip_total": 15, "timestamp": 1714400200000 },
+  "1714400300000": { "count": 80, "wip_total": 5, "timestamp": 1714400300000 },
+  "1714400400000": { "count": 100, "wip_total": 0, "timestamp": 1714400400000 }
+}
+    },
+    "sala_02": {
+      "metadata": { "createdAt": "", "leaderId": "", "status": "waiting" },
+      "players": {
+        "station_A": { "name": "", "uid": "" },
+        "station_B": { "name": "", "uid": "" },
+        "station_C": { "name": "", "uid": "" },
+        "station_D": { "name": "", "uid": "" },
+        "station_E": { "name": "", "uid": "" }
+      },
+      "production": {
+        "stocks": { "A": 100, "B": 300, "C": 100, "D": 200, "E": 300 },
+        "wips": { "ab": 0, "bc": 0, "cd": 0, "de": 0 },
+        "workAreas": {
+          "A": { "stockItems": 0, "wipItems": 0 },
+          "B": { "stockItems": 0, "wipItems": 0 },
+          "C": { "stockItems": 0, "wipItems": 0 },
+          "D": { "stockItems": 0, "wipItems": 0 },
+          "E": { "stockItems": 0, "wipItems": 0 }
+        },
+        "finished_total": 0
+      },
+      "history": {
+        "timestamp_1": { "A": 10, "B": 8, "C": 5, "D": 3, "E": 2 },
+        "timestamp_2": { "A": 11, "B": 9, "C": 6, "D": 4, "E": 3 }
+      }
+    },
+    "sala_03": {
+      "metadata": { "createdAt": "", "leaderId": "", "status": "waiting" },
+      "players": {
+        "station_A": { "name": "", "uid": "" },
+        "station_B": { "name": "", "uid": "" },
+        "station_C": { "name": "", "uid": "" },
+        "station_D": { "name": "", "uid": "" },
+        "station_E": { "name": "", "uid": "" }
+      },
+      "production": {
+        "stocks": { "A": 100, "B": 300, "C": 100, "D": 200, "E": 300 },
+        "wips": { "ab": 0, "bc": 0, "cd": 0, "de": 0 },
+        "workAreas": {
+          "A": { "stockItems": 0, "wipItems": 0 },
+          "B": { "stockItems": 0, "wipItems": 0 },
+          "C": { "stockItems": 0, "wipItems": 0 },
+          "D": { "stockItems": 0, "wipItems": 0 },
+          "E": { "stockItems": 0, "wipItems": 0 }
+        },
+        "finished_total": 0
+      },
+      "history": {
+        "timestamp_1": { "A": 10, "B": 8, "C": 5, "D": 3, "E": 2 },
+        "timestamp_2": { "A": 11, "B": 9, "C": 6, "D": 4, "E": 3 }
+      }
+    },
+    "sala_04": {
+      "metadata": { "createdAt": "", "leaderId": "", "status": "waiting" },
+      "players": {
+        "station_A": { "name": "", "uid": "" },
+        "station_B": { "name": "", "uid": "" },
+        "station_C": { "name": "", "uid": "" },
+        "station_D": { "name": "", "uid": "" },
+        "station_E": { "name": "", "uid": "" }
+      },
+      "production": {
+        "stocks": { "A": 100, "B": 300, "C": 100, "D": 200, "E": 300 },
+        "wips": { "ab": 0, "bc": 0, "cd": 0, "de": 0 },
+        "workAreas": {
+          "A": { "stockItems": 0, "wipItems": 0 },
+          "B": { "stockItems": 0, "wipItems": 0 },
+          "C": { "stockItems": 0, "wipItems": 0 },
+          "D": { "stockItems": 0, "wipItems": 0 },
+          "E": { "stockItems": 0, "wipItems": 0 }
+        },
+        "finished_total": 0
+      },
+      "history": {
+        "timestamp_1": { "A": 10, "B": 8, "C": 5, "D": 3, "E": 2 },
+        "timestamp_2": { "A": 11, "B": 9, "C": 6, "D": 4, "E": 3 }
+      }
+    },
+    "sala_05": {
+      "metadata": { "createdAt": "", "leaderId": "", "status": "waiting" },
+      "players": {
+        "station_A": { "name": "", "uid": "" },
+        "station_B": { "name": "", "uid": "" },
+        "station_C": { "name": "", "uid": "" },
+        "station_D": { "name": "", "uid": "" },
+        "station_E": { "name": "", "uid": "" }
+      },
+      "production": {
+        "stocks": { "A": 100, "B": 300, "C": 100, "D": 200, "E": 300 },
+        "wips": { "ab": 0, "bc": 0, "cd": 0, "de": 0 },
+        "workAreas": {
+          "A": { "stockItems": 0, "wipItems": 0 },
+          "B": { "stockItems": 0, "wipItems": 0 },
+          "C": { "stockItems": 0, "wipItems": 0 },
+          "D": { "stockItems": 0, "wipItems": 0 },
+          "E": { "stockItems": 0, "wipItems": 0 }
+        },
+        "finished_total": 0
+      },
+      "history": {
+        "timestamp_1": { "A": 10, "B": 8, "C": 5, "D": 3, "E": 2 },
+        "timestamp_2": { "A": 11, "B": 9, "C": 6, "D": 4, "E": 3 }
+      }
+    },
+    "sala_06": {
+      "metadata": { "createdAt": "", "leaderId": "", "status": "waiting" },
+      "players": {
+        "station_A": { "name": "", "uid": "" },
+        "station_B": { "name": "", "uid": "" },
+        "station_C": { "name": "", "uid": "" },
+        "station_D": { "name": "", "uid": "" },
+        "station_E": { "name": "", "uid": "" }
+      },
+      "production": {
+        "stocks": { "A": 100, "B": 300, "C": 100, "D": 200, "E": 300 },
+        "wips": { "ab": 0, "bc": 0, "cd": 0, "de": 0 },
+        "workAreas": {
+          "A": { "stockItems": 0, "wipItems": 0 },
+          "B": { "stockItems": 0, "wipItems": 0 },
+          "C": { "stockItems": 0, "wipItems": 0 },
+          "D": { "stockItems": 0, "wipItems": 0 },
+          "E": { "stockItems": 0, "wipItems": 0 }
+        },
+        "finished_total": 0
+      },
+      "history": {
+        "timestamp_1": { "A": 10, "B": 8, "C": 5, "D": 3, "E": 2 },
+        "timestamp_2": { "A": 11, "B": 9, "C": 6, "D": 4, "E": 3 }
+      }
+    }
+  }
+}

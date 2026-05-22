@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
 import { ref, onValue, runTransaction } from 'firebase/database';
 import { useGame } from '../context/GameContext';
+import { useNavigate } from 'react-router-dom';
 import './Game.css';
 
 const Game = () => {
   const { currentRoom, myStation } = useGame();
   const [roomData, setRoomData] = useState(null);
+
+  const navigate = useNavigate();
 
   const colors = { A: "blue-A", B: "green-B", C: "red-C", D: "grey-D", E: "purple-E" };
 
@@ -18,12 +21,34 @@ const Game = () => {
     station_E: { stockNeeded: 2, wipNeeded: 1, nextWip: 'finish', prevWip: 'de' }
   };
 
+  const getGabaritoComposition = (letter) => {
+    let g = [];
+    if (letter === 'A') g.push(colors.A);
+    if (letter === 'B') g.push(colors.A, colors.B, colors.B, colors.B);
+    if (letter === 'C') g.push(colors.A, colors.B, colors.B, colors.B, colors.C);
+    if (letter === 'D') g.push(colors.A, colors.B, colors.B, colors.B, colors.C, colors.D, colors.D);
+    if (letter === 'E') g.push(colors.A, colors.B, colors.B, colors.B, colors.C, colors.D, colors.D, colors.E, colors.E);
+    return g;
+  };
+
   useEffect(() => {
+    
     if (!currentRoom) return;
     const roomRef = ref(db, `rooms/${currentRoom}`);
     const unsubscribe = onValue(roomRef, (snapshot) => setRoomData(snapshot.val()));
     return () => unsubscribe();
   }, [currentRoom]);
+
+  useEffect(() => {
+  //if (roomData?.production?.finished_total >= 100) {
+   // navigate('/results');
+  //}
+
+  if (roomData?.production?.finished_total >= 3) { // 
+    navigate('/results');
+  }
+
+}, [roomData?.production?.finished_total, navigate]);
 
   if (!roomData) return <div className="loading">Carregando...</div>;
   const prod = roomData.production;
@@ -56,26 +81,59 @@ const Game = () => {
   };
 
   const handleAction = (type) => {
-    const sLetter = myStation.split('_')[1];
-    const mySpec = specs[myStation];
-    runTransaction(ref(db, `rooms/${currentRoom}/production`), (current) => {
-      if (!current) return current;
-      if (type === 'STOCK' && current.workAreas[sLetter].stockItems < mySpec.stockNeeded) {
+  const sLetter = myStation.split('_')[1];
+  const mySpec = specs[myStation];
+  
+  // Referência para a produção (onde ocorrem os cliques rápidos)
+  const prodRef = ref(db, `rooms/${currentRoom}/production`);
+
+  runTransaction(prodRef, (current) => {
+    if (!current) return current;
+
+    if (type === 'STOCK') {
+      if (current.workAreas[sLetter].stockItems < mySpec.stockNeeded && current.stocks[sLetter] > 0) {
         current.stocks[sLetter]--;
         current.workAreas[sLetter].stockItems++;
       }
-      if (type === 'WIP' && current.wips[mySpec.prevWip] > 0 && current.workAreas[sLetter].wipItems === 0) {
+    }
+
+    if (type === 'WIP') {
+      if (current.wips[mySpec.prevWip] > 0 && current.workAreas[sLetter].wipItems === 0) {
         current.wips[mySpec.prevWip]--;
         current.workAreas[sLetter].wipItems = 1;
       }
-      if (type === 'SEND') {
-        if (mySpec.nextWip === 'finish') current.finished_total++;
-        else current.wips[mySpec.nextWip]++;
-        current.workAreas[sLetter] = { stockItems: 0, wipItems: 0 };
+    }
+
+    if (type === 'SEND') {
+      const isFinished = mySpec.nextWip === 'finish'; //Estação E
+
+      if (isFinished) { //Se está na estação E:
+        current.finished_total++;
+
+        const snapshot = {
+          count: current.finished_total,
+          wip_total: (current.wips.ab || 0) + (current.wips.bc || 0) + (current.wips.cd || 0) + (current.wips.de || 0),
+          timestamp: Date.now()
+        };
+
+        // Referência correta para o nó history/timestamp
+        const historyRef = ref(db, `rooms/${currentRoom}/history/${snapshot.timestamp}`);
+        
+        import('firebase/database').then(({ set }) => {
+          set(historyRef, snapshot);
+        });
+      } else {
+        // Envio normal para o próximo WIP
+        current.wips[mySpec.nextWip]++;
       }
-      return current;
-    });
-  };
+
+      // Limpa a bancada de trabalho da estação
+      current.workAreas[sLetter] = { stockItems: 0, wipItems: 0 };
+    }
+
+    return current;
+  });
+};
 
   return (
     <div className="game-screen">
@@ -86,10 +144,11 @@ const Game = () => {
           const composition = getComposition(letter, work);
           const isFull = composition.length === (specs[`station_${letter}`].stockNeeded + (letter === 'A' ? 0 : (letter === 'B' ? 1 : (letter === 'C' ? 4 : (letter === 'D' ? 5 : 7)))));
 
+          const gabaritoComp = getGabaritoComposition(letter);
           return (
             <React.Fragment key={letter}>
               <div className={`station-card ${isMe ? 'is-me' : ''}`}>
-                <div className="station-label">Estação {letter}</div>
+                <div className="station-label">Station {letter}</div>
                 <div className="work-bench">
                   {/* Container E tem a borda especial tracejada */}
                   <div className={`cube-grid ${letter === 'E' ? 'final-container' : ''}`}>
@@ -101,8 +160,18 @@ const Game = () => {
                 <div className="station-controls">
                   <button disabled={!isMe || work.stockItems >= specs[`station_${letter}`].stockNeeded || prod.stocks[letter] <= 0} onClick={() => handleAction('STOCK')}>Stock</button>
                   {letter !== 'A' && <button disabled={!isMe || work.wipItems > 0 || prod.wips[specs[`station_${letter}`].prevWip] <= 0} onClick={() => handleAction('WIP')}>WIP</button>}
-                  <button className="btn-send" disabled={!isMe || !isFull} onClick={() => handleAction('SEND')}>Enviar</button>
+                  <button className="btn-send" disabled={!isMe || !isFull} onClick={() => handleAction('SEND')}>Send</button>
                 </div>
+                
+                <div className="reference-gabarito">
+                  <div className="gabarito-title">Gabarito de Entrega</div>
+                  <div className={`cube-grid gabarito-grid ${letter === 'E' ? 'final-container-ref' : ''}`}>
+                    {[...Array(9)].map((_, i) => (
+                      <div key={`g-${i}`} className={`slot slot-gabarito ${gabaritoComp[i] ? `filled ${gabaritoComp[i]}` : 'empty-gabarito'}`} />
+                    ))}
+                  </div>
+                </div>
+
               </div>
               {letter !== 'E' && (
                 <div className="wip-flow-indicator">

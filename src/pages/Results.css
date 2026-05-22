@@ -1,0 +1,12 @@
+.results-container { padding: 40px; max-width: 1200px; margin: 0 auto; background: #f9f9f9; }
+.results-header { text-align: center; margin-bottom: 30px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+.kpi-card { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.kpi-card.highlight { border: 2px solid #eb4d4b; background: #fff5f5; }
+.kpi-card .value { font-size: 2rem; font-weight: bold; color: #2d3436; margin: 10px 0; }
+.charts-section { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
+.chart-box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.ranking-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; }
+.ranking-table th, .ranking-table td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+.my-room-row { background: #e3f2fd; font-weight: bold; }
+.restart-btn { display: block; width: 250px; margin: 40px auto; padding: 15px; background: #0984e3; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; }

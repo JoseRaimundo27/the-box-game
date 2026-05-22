@@ -181,6 +181,51 @@ button:disabled {
   font-size: 0.8rem;
 }
 
+/* NOVA SEÇÃO: Gabarito de Referência */
+.reference-gabarito {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 2px solid #dfe6e9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fcfcfc; /* Fundo levemente diferente */
+  border-radius: 0 0 8px 8px; /* Arredonda só embaixo */
+}
+
+.gabarito-title {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #7f8c8d;
+  font-weight: bold;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
+}
+
+/* O Grid do gabarito é menor e mais opaco */
+.gabarito-grid {
+  grid-template-columns: repeat(3, 16px); /* Slots menores (16px em vez de 22px) */
+  gap: 2px;
+  padding: 3px;
+  opacity: 0.7; /* Efeito de "foto" ou referência, não é interativo */
+}
+
+.slot-gabarito {
+  width: 16px;
+  height: 16px;
+}
+
+/* Slots Vazios no gabarito não têm borda pontilhada */
+.slot.empty-gabarito {
+  background-color: #ecf0f1;
+}
+
+/* Borda tracejada especial para o gabarito final na estação E */
+.final-container-ref {
+  border: 1px dashed #7f8c8d;
+  border-radius: 2px;
+}
+
 /* Ajustes para telas muito pequenas */
 @media (max-width: 900px) {
   .cube-grid {
@@ -192,5 +237,13 @@ button:disabled {
   }
   .station-card {
     padding: 5px;
+  }
+
+  .gabarito-grid {
+    grid-template-columns: repeat(3, 12px);
+  }
+  .slot-gabarito {
+    width: 12px;
+    height: 12px;
   }
 }

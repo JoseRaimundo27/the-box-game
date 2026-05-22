@@ -1,0 +1,14 @@
+
+TODO:
+Tem que ter um custo por caixinha Valor da caixinha variavel (1-5), custo que estão na mesa (estação de trabalho) e custo do que está no WIP in real time. 
+
+Criar um botao para dar as estatisticas antes, com uma porcentagem
+
+adicionar uma caixinha com total number of wip 
+
+Mostrar o Acúmulo de estoques como gráfico de barras
+
+Traduzir para espanhol*/ingles/portugues
+
+Investigar Azure para hostear o site.
+

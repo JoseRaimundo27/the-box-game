@@ -38,20 +38,20 @@ const Selection = () => {
       if (result.committed) {
         setMyStation(stationKey);
       } else {
-        alert("Esta estação acabou de ser ocupada!");
+        alert("this station are busy!");
       }
     });
   };
 
-  if (!roomData) return <div>Carregando sala...</div>;
+  if (!roomData) return <div>Loading room....</div>;
 
   const stations = ['station_A', 'station_B', 'station_C', 'station_D', 'station_E'];
   const allReady = stations.every(s => roomData.players[s].uid !== "");
 
   return (
     <div className="selection-container">
-      <h2>Sala: {currentRoom.toUpperCase()}</h2>
-      <p>Escolha sua posição na linha de produção:</p>
+      <h2>Room: {currentRoom.toUpperCase()}</h2>
+      <p>Choose your position in production line:</p>
 
       <div className="stations-grid">
         {stations.map((s) => {
@@ -73,11 +73,11 @@ const Selection = () => {
 
       {allReady && (
         <button className="btn-start" onClick={() => navigate('/game')}>
-          IR PARA A FÁBRICA
+          GO TO THE FACTORY
         </button>
       )}
       
-      {!allReady && <p style={{marginTop: '20px', color: '#666'}}>Aguardando todos os jogadores...</p>}
+      {!allReady && <p style={{marginTop: '20px', color: '#666'}}>Waiting the players...</p>}
     </div>
   );
 };
