@@ -12,6 +12,7 @@ const Game = () => {
   const navigate = useNavigate();
 
   const colors = { A: "blue-A", B: "green-B", C: "red-C", D: "grey-D", E: "purple-E" };
+  const META_PRODUCAO = 100; // Constante para a meta
 
   const specs = {
     station_A: { stockNeeded: 1, wipNeeded: 0, nextWip: 'ab' },
@@ -32,28 +33,22 @@ const Game = () => {
   };
 
   useEffect(() => {
-    
     if (!currentRoom) return;
     const roomRef = ref(db, `rooms/${currentRoom}`);
     const unsubscribe = onValue(roomRef, (snapshot) => setRoomData(snapshot.val()));
     return () => unsubscribe();
   }, [currentRoom]);
 
+  // Redirecionamento automático ao bater a meta
   useEffect(() => {
-  //if (roomData?.production?.finished_total >= 100) {
-   // navigate('/results');
-  //}
-
-  if (roomData?.production?.finished_total >= 3) { // 
-    navigate('/results');
-  }
-
-}, [roomData?.production?.finished_total, navigate]);
+    if (roomData?.production?.finished_total >= META_PRODUCAO) {
+      navigate('/results');
+    }
+  }, [roomData?.production?.finished_total, navigate]);
 
   if (!roomData) return <div className="loading">Carregando...</div>;
   const prod = roomData.production;
 
-  // Monta o array visual baseado no seu requisito exato de herança
   const getComposition = (letter, work) => {
     let comp = [];
     const hasWip = work.wipItems > 0;
@@ -62,81 +57,94 @@ const Game = () => {
       if (work.stockItems > 0) comp.push(colors.A);
     } 
     else if (letter === 'B') {
-      if (hasWip) comp.push(colors.A); // 1 de A
-      for (let i = 0; i < work.stockItems; i++) comp.push(colors.B); // + 3 de B
+      if (hasWip) comp.push(colors.A); 
+      for (let i = 0; i < work.stockItems; i++) comp.push(colors.B); 
     } 
     else if (letter === 'C') {
-      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B); // 4 do WIP
-      if (work.stockItems > 0) comp.push(colors.C); // + 1 de C
+      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B); 
+      if (work.stockItems > 0) comp.push(colors.C); 
     } 
     else if (letter === 'D') {
-      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B, colors.C); // 5 do WIP
-      for (let i = 0; i < work.stockItems; i++) comp.push(colors.D); // + 2 de D
+      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B, colors.C); 
+      for (let i = 0; i < work.stockItems; i++) comp.push(colors.D); 
     } 
     else if (letter === 'E') {
-      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B, colors.C, colors.D, colors.D); // 7 do WIP
-      for (let i = 0; i < work.stockItems; i++) comp.push(colors.E); // + 2 de E
+      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B, colors.C, colors.D, colors.D); 
+      for (let i = 0; i < work.stockItems; i++) comp.push(colors.E); 
     }
     return comp;
   };
 
   const handleAction = (type) => {
-  const sLetter = myStation.split('_')[1];
-  const mySpec = specs[myStation];
-  
-  // Referência para a produção (onde ocorrem os cliques rápidos)
-  const prodRef = ref(db, `rooms/${currentRoom}/production`);
+    const sLetter = myStation.split('_')[1];
+    const mySpec = specs[myStation];
+    
+    const prodRef = ref(db, `rooms/${currentRoom}/production`);
 
-  runTransaction(prodRef, (current) => {
-    if (!current) return current;
+    runTransaction(prodRef, (current) => {
+      if (!current) return current;
 
-    if (type === 'STOCK') {
-      if (current.workAreas[sLetter].stockItems < mySpec.stockNeeded && current.stocks[sLetter] > 0) {
-        current.stocks[sLetter]--;
-        current.workAreas[sLetter].stockItems++;
-      }
-    }
-
-    if (type === 'WIP') {
-      if (current.wips[mySpec.prevWip] > 0 && current.workAreas[sLetter].wipItems === 0) {
-        current.wips[mySpec.prevWip]--;
-        current.workAreas[sLetter].wipItems = 1;
-      }
-    }
-
-    if (type === 'SEND') {
-      const isFinished = mySpec.nextWip === 'finish'; //Estação E
-
-      if (isFinished) { //Se está na estação E:
-        current.finished_total++;
-
-        const snapshot = {
-          count: current.finished_total,
-          wip_total: (current.wips.ab || 0) + (current.wips.bc || 0) + (current.wips.cd || 0) + (current.wips.de || 0),
-          timestamp: Date.now()
-        };
-
-        // Referência correta para o nó history/timestamp
-        const historyRef = ref(db, `rooms/${currentRoom}/history/${snapshot.timestamp}`);
-        
-        import('firebase/database').then(({ set }) => {
-          set(historyRef, snapshot);
-        });
-      } else {
-        // Envio normal para o próximo WIP
-        current.wips[mySpec.nextWip]++;
+      if (type === 'STOCK') {
+        if (current.workAreas[sLetter].stockItems < mySpec.stockNeeded && current.stocks[sLetter] > 0) {
+          current.stocks[sLetter]--;
+          current.workAreas[sLetter].stockItems++;
+        }
       }
 
-      // Limpa a bancada de trabalho da estação
-      current.workAreas[sLetter] = { stockItems: 0, wipItems: 0 };
-    }
+      if (type === 'WIP') {
+        if (current.wips[mySpec.prevWip] > 0 && current.workAreas[sLetter].wipItems === 0) {
+          current.wips[mySpec.prevWip]--;
+          current.workAreas[sLetter].wipItems = 1;
+        }
+      }
 
-    return current;
-  });
-};
+      if (type === 'SEND') {
+        const isFinished = mySpec.nextWip === 'finish'; 
+
+        if (isFinished) { 
+          current.finished_total++;
+
+          const snapshot = {
+            count: current.finished_total,
+            wip_total: (current.wips.ab || 0) + (current.wips.bc || 0) + (current.wips.cd || 0) + (current.wips.de || 0),
+            timestamp: Date.now()
+          };
+
+          const historyRef = ref(db, `rooms/${currentRoom}/history/${snapshot.timestamp}`);
+          
+          import('firebase/database').then(({ set }) => {
+            set(historyRef, snapshot);
+          });
+        } else {
+          current.wips[mySpec.nextWip]++;
+        }
+
+        current.workAreas[sLetter] = { stockItems: 0, wipItems: 0 };
+      }
+
+      return current;
+    });
+  };
+
+  // Botão para forçar a ida para os resultados
+  const handleForceEnd = () => {
+    navigate('/results');
+  };
 
   return (
     <div className="game-screen">
+      {/* BARRA SUPERIOR ADICIONADA AQUI */}
+      <div className="game-top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', backgroundColor: '#2c3e50', color: 'white' }}>
+        <div className="production-progress">
+          <strong>Progresso:</strong> {prod.finished_total} / {META_PRODUCAO}
+        </div>
+        <button 
+          onClick={handleForceEnd} 
+          style={{ backgroundColor: '#f39c12', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+          📊 Encerrar Turno (Estatísticas)
+        </button>
+      </div>
+
       <div className="factory-floor">
         {['A', 'B', 'C', 'D', 'E'].map((letter) => {
           const isMe = myStation === `station_${letter}`;
@@ -150,7 +158,6 @@ const Game = () => {
               <div className={`station-card ${isMe ? 'is-me' : ''}`}>
                 <div className="station-label">Station {letter}</div>
                 <div className="work-bench">
-                  {/* Container E tem a borda especial tracejada */}
                   <div className={`cube-grid ${letter === 'E' ? 'final-container' : ''}`}>
                     {[...Array(9)].map((_, i) => (
                       <div key={i} className={`slot ${composition[i] ? `filled ${composition[i]}` : 'empty'}`} />

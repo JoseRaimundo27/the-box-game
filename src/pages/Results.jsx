@@ -11,7 +11,7 @@ import './Results.css';
 const Results = () => {
   const { currentRoom } = useGame();
   const [data, setData] = useState([]);
-  const [kpis, setKpis] = useState({ totalTime: 0, avgWip: 0, financialImpact: 0 });
+  const [kpis, setKpis] = useState({ totalTime: 0, avgWip: 0, financialImpact: 0 , completionRate: 0});
   const [globalRank, setGlobalRank] = useState([]);
   const navigate = useNavigate();
 
@@ -60,11 +60,15 @@ const Results = () => {
           const avgWip = sumWip / historyArray.length;
           const financialImpact = sumWip * 10;
 
+          const lastCount = historyArray[historyArray.length - 1].count; // Pega o último produto feito
+          const percentage = (lastCount / 100) * 100; // Calcula a porcentagem em relação à meta de 100
+
           // setKpis com formatação garantida
           setKpis({
             totalTime: Number(totalTime).toFixed(1),
             avgWip: Number(avgWip).toFixed(2),
-            financialImpact: financialImpact.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+            financialImpact: financialImpact.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+            completionRate: percentage.toFixed(0)
           });
         }
       }
@@ -91,6 +95,7 @@ const Results = () => {
           <p className="value">{kpis.totalTime}s</p>
           <span className="label">Tempo de ciclo</span>
         </div>
+        
         <div className="kpi-card highlight">
           <h3>Impacto Financeiro WIP</h3>
           <p className="value">{kpis.financialImpact}</p>
@@ -100,6 +105,11 @@ const Results = () => {
           <h3>Média de WIP</h3>
           <p className="value">{kpis.avgWip}</p>
           <span className="label">Itens em espera</span>
+        </div>
+        <div className="kpi-card highlight-blue">
+          <h3>Porcentagem</h3>
+          <p className="value">{kpis.completionRate}%</p>
+          <span className="label">Da Demanda Entregue</span>
         </div>
       </div>
 
@@ -160,7 +170,22 @@ const Results = () => {
         </table>
       </section>
 
-      <button className="restart-btn" onClick={resetGame}>Nova Partida</button>
+      <div className="results-actions" style={{ display: 'flex', gap: '15px', marginTop: '20px', justifyContent: 'center' }}>
+        
+        {/* BOTÃO NOVO: Voltar para o jogo */}
+        <button 
+          className="restart-btn" 
+          onClick={() => navigate('/game')}
+                >
+         Voltar para a Fábrica
+        </button>
+
+        {/* Seu botão antigo de Nova Partida */}
+        <button className="restart-btn" onClick={resetGame}>
+          Nova Partida
+        </button>
+      </div>
+            
     </div>
   );
 };
