@@ -1,0 +1,69 @@
+{
+  "lobby": {
+    "title": "The Box Game - Available Rooms",
+    "subtitle": "Choose a room to start the production simulation.",
+    "btn_reset": "🔄 Reset Factory (Clear All)",
+    "status_waiting": "Waiting",
+    "status_playing": "Playing",
+    "players": "Players:",
+    "btn_full": "Room Full",
+    "btn_enter": "Join Room"
+  },
+  "selection": {
+    "loading": "Loading room...",
+    "room_title": "Room:",
+    "subtitle": "Choose your position in the production line:",
+    "you": "You",
+    "occupied": "Occupied",
+    "available": "Available",
+    "btn_start": "GO TO THE FACTORY",
+    "waiting_players": "Waiting for players...",
+    "alert_busy": "This station is busy!"
+  },
+  "game": {
+    "loading": "Loading...",
+    "progress": "Progress:",
+    "btn_force_end": "📊 End Shift (Statistics)",
+    "station_label": "Station",
+    "btn_stock": "Stock",
+    "btn_wip": "WIP",
+    "btn_send": "Send",
+    "gabarito_title": "Delivery Template"
+  },"results": {
+    "header_title": "Industrial Performance Report",
+    "room_label": "Room:",
+    "kpis": {
+      "lead_time": "Total Lead Time",
+      "lead_time_sub": "Cycle time",
+      "wip_total": "Total WIP",
+      "wip_total_sub": "Unfinished pieces",
+      "financial": "WIP Financial Impact",
+      "financial_sub": "Cost of Stagnant Inventory",
+      "avg_wip": "Average WIP",
+      "avg_wip_sub": "Items waiting",
+      "percentage": "Percentage",
+      "percentage_sub": "Of Delivered Demand"
+    },
+    "charts": {
+      "s_curve_title": "Production S-Curve (Accumulated)",
+      "wip_title": "Stock Accumulation (WIP)",
+      "time_axis": "Time",
+      "units_axis": "Units",
+      "finished_products": "Finished Products",
+      "wip_items": "Items in WIP"
+    },
+    "ranking": {
+      "title": "Global Benchmarking (Top Rooms)",
+      "th_position": "Position",
+      "th_room": "Room ID",
+      "th_lead_time": "Total Lead Time",
+      "th_status": "Status",
+      "your_perf": "Your Performance",
+      "finished": "Finished"
+    },
+    "actions": {
+      "btn_back_factory": "Return to Factory",
+      "btn_new_game": "New Match"
+    }
+  }
+}

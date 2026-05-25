@@ -6,9 +6,9 @@ Criar um botao para dar as estatisticas antes, com uma porcentagem (V)
 
 adicionar uma caixinha com total number of wip (V)
 
-Mostrar o Acúmulo de estoques como gráfico de barras
+Mostrar o Acúmulo de estoques como gráfico de barras (V)
 
 Traduzir para espanhol*/ingles/portugues
 
-Investigar Azure para hostear o site.
+Investigar Azure para hostear o site. (V) -> Static Web Apps
 

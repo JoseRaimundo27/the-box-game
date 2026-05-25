@@ -3,12 +3,14 @@ import { db } from '../firebase/config';
 import { ref, onValue, runTransaction } from 'firebase/database';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
+import { useTranslation } from 'react-i18next'; // <--- IMPORTANTE: Importando o hook de tradução
 import './Selection.css';
 
 const Selection = () => {
   const { currentRoom, user, setMyStation, myStation } = useGame();
   const [roomData, setRoomData] = useState(null);
   const navigate = useNavigate();
+  const { t } = useTranslation(); // <--- Habilitando a função t()
 
   useEffect(() => {
     if (!currentRoom) {
@@ -28,30 +30,31 @@ const Selection = () => {
     const stationRef = ref(db, `rooms/${currentRoom}/players/${stationKey}`);
 
     runTransaction(stationRef, (currentData) => {
-      // Se a vaga já tiver um UID e não for o meu, cancela
       if (currentData && currentData.uid !== "") {
         return; 
       }
-      // Se estiver vazia, ocupa
       return { uid: user.uid, name: "Jogador" }; 
     }).then((result) => {
       if (result.committed) {
         setMyStation(stationKey);
       } else {
-        alert("this station are busy!");
+        // Alerta traduzido para caso a estação seja ocupada no milissegundo anterior
+        alert(t('selection.alert_busy')); 
       }
     });
   };
 
-  if (!roomData) return <div>Loading room....</div>;
+  // Tela de carregamento traduzida
+  if (!roomData) return <div className="loading">{t('selection.loading')}</div>;
 
   const stations = ['station_A', 'station_B', 'station_C', 'station_D', 'station_E'];
   const allReady = stations.every(s => roomData.players[s].uid !== "");
 
   return (
     <div className="selection-container">
-      <h2>Room: {currentRoom.toUpperCase()}</h2>
-      <p>Choose your position in production line:</p>
+      {/* Título e subtítulos traduzidos */}
+      <h2>{t('selection.room_title')} {currentRoom.toUpperCase()}</h2>
+      <p>{t('selection.subtitle')}</p>
 
       <div className="stations-grid">
         {stations.map((s) => {
@@ -65,19 +68,29 @@ const Selection = () => {
               onClick={() => !isOccupied && selectStation(s)}
             >
               <span className="station-name">{s.split('_')[1]}</span>
-              <small>{isOccupied ? (isMine ? "Você" : "Ocupado") : "Disponível"}</small>
+              {/* Status das caixas traduzidos dinamicamente */}
+              <small>
+                {isOccupied 
+                  ? (isMine ? t('selection.you') : t('selection.occupied')) 
+                  : t('selection.available')}
+              </small>
             </div>
           );
         })}
       </div>
 
+      {/* Botão de início e texto de espera traduzidos */}
       {allReady && (
         <button className="btn-start" onClick={() => navigate('/game')}>
-          GO TO THE FACTORY
+          {t('selection.btn_start')}
         </button>
       )}
       
-      {!allReady && <p style={{marginTop: '20px', color: '#666'}}>Waiting the players...</p>}
+      {!allReady && (
+        <p style={{ marginTop: '20px', color: '#666' }}>
+          {t('selection.waiting_players')}
+        </p>
+      )}
     </div>
   );
 };

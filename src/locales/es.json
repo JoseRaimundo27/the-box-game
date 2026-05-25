@@ -1,0 +1,70 @@
+{
+  "lobby": {
+    "title": "The Box Game - Salas Disponibles",
+    "subtitle": "Elige una sala para iniciar la simulación de producción.",
+    "btn_reset": "🔄 Reiniciar Fábrica (Borrar Todo)",
+    "status_waiting": "Esperando",
+    "status_playing": "Jugando",
+    "players": "Jugadores:",
+    "btn_full": "Sala Llena",
+    "btn_enter": "Entrar a la Sala"
+  },
+  "selection": {
+    "loading": "Cargando sala...",
+    "room_title": "Sala:",
+    "subtitle": "Elige tu posición en la línea de producción:",
+    "you": "Tú",
+    "occupied": "Ocupado",
+    "available": "Disponible",
+    "btn_start": "IR A LA FÁBRICA",
+    "waiting_players": "Esperando a los jugadores...",
+    "alert_busy": "¡Esta estación ya está ocupada!"
+  },
+  "game": {
+    "loading": "Cargando...",
+    "progress": "Avance:",
+    "btn_force_end": "📊 Terminar Turno (Estadísticas)",
+    "station_label": "Estación",
+    "btn_stock": "Stock",
+    "btn_wip": "WIP",
+    "btn_send": "Enviar",
+    "gabarito_title": "Modelo de Entrega"
+  },
+  "results": {
+    "header_title": "Informe de Rendimiento Industrial",
+    "room_label": "Sala:",
+    "kpis": {
+      "lead_time": "Lead Time Total",
+      "lead_time_sub": "Tiempo de ciclo",
+      "wip_total": "WIP Total",
+      "wip_total_sub": "Piezas que no fueron terminadas",
+      "financial": "Impacto Financiero del WIP",
+      "financial_sub": "Costo de Inventario Parado",
+      "avg_wip": "Promedio de WIP",
+      "avg_wip_sub": "Artículos en espera",
+      "percentage": "Porcentaje",
+      "percentage_sub": "De la Demanda Entregada"
+    },
+    "charts": {
+      "s_curve_title": "Curva S de Producción (Acumulado)",
+      "wip_title": "Acumulación de Stock (WIP)",
+      "time_axis": "Tiempo",
+      "units_axis": "Unidades",
+      "finished_products": "Productos Terminados",
+      "wip_items": "Artículos en el WIP"
+    },
+    "ranking": {
+      "title": "Benchmarking Global (Top Salas)",
+      "th_position": "Posición",
+      "th_room": "ID de la Sala",
+      "th_lead_time": "Lead Time Total",
+      "th_status": "Estado",
+      "your_perf": "Tu Rendimiento",
+      "finished": "Finalizado"
+    },
+    "actions": {
+      "btn_back_factory": "Volver a la Fábrica",
+      "btn_new_game": "Nueva Partida"
+    }
+  }
+}

@@ -3,6 +3,7 @@ import { db } from '../firebase/config';
 import { ref, onValue, runTransaction } from 'firebase/database';
 import { useGame } from '../context/GameContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next'; // <--- IMPORTANTE: Importando o hook de tradução
 import './Game.css';
 
 const Game = () => {
@@ -10,9 +11,10 @@ const Game = () => {
   const [roomData, setRoomData] = useState(null);
 
   const navigate = useNavigate();
+  const { t } = useTranslation(); // <--- Habilitando a função t()
 
   const colors = { A: "blue-A", B: "green-B", C: "red-C", D: "grey-D", E: "purple-E" };
-  const META_PRODUCAO = 100; // Constante para a meta
+  const META_PRODUCAO = 100; 
 
   const specs = {
     station_A: { stockNeeded: 1, wipNeeded: 0, nextWip: 'ab' },
@@ -39,14 +41,14 @@ const Game = () => {
     return () => unsubscribe();
   }, [currentRoom]);
 
-  // Redirecionamento automático ao bater a meta
   useEffect(() => {
     if (roomData?.production?.finished_total >= META_PRODUCAO) {
       navigate('/results');
     }
   }, [roomData?.production?.finished_total, navigate]);
 
-  if (!roomData) return <div className="loading">Carregando...</div>;
+  // Carregamento traduzido
+  if (!roomData) return <div className="loading">{t('game.loading')}</div>;
   const prod = roomData.production;
 
   const getComposition = (letter, work) => {
@@ -126,22 +128,21 @@ const Game = () => {
     });
   };
 
-  // Botão para forçar a ida para os resultados
   const handleForceEnd = () => {
     navigate('/results');
   };
 
   return (
     <div className="game-screen">
-      {/* BARRA SUPERIOR ADICIONADA AQUI */}
       <div className="game-top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', backgroundColor: '#2c3e50', color: 'white' }}>
         <div className="production-progress">
-          <strong>Progresso:</strong> {prod.finished_total} / {META_PRODUCAO}
+          {/* Progresso Traduzido */}
+          <strong>{t('game.progress')}</strong> {prod.finished_total} / {META_PRODUCAO}
         </div>
         <button 
           onClick={handleForceEnd} 
           style={{ backgroundColor: '#f39c12', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
-          📊 Encerrar Turno (Estatísticas)
+          {t('game.btn_force_end')}
         </button>
       </div>
 
@@ -156,7 +157,9 @@ const Game = () => {
           return (
             <React.Fragment key={letter}>
               <div className={`station-card ${isMe ? 'is-me' : ''}`}>
-                <div className="station-label">Station {letter}</div>
+                {/* Nome da Estação Traduzido */}
+                <div className="station-label">{t('game.station_label')} {letter}</div>
+                
                 <div className="work-bench">
                   <div className={`cube-grid ${letter === 'E' ? 'final-container' : ''}`}>
                     {[...Array(9)].map((_, i) => (
@@ -164,14 +167,25 @@ const Game = () => {
                     ))}
                   </div>
                 </div>
+                
+                {/* Botões de Ação Traduzidos */}
                 <div className="station-controls">
-                  <button disabled={!isMe || work.stockItems >= specs[`station_${letter}`].stockNeeded || prod.stocks[letter] <= 0} onClick={() => handleAction('STOCK')}>Stock</button>
-                  {letter !== 'A' && <button disabled={!isMe || work.wipItems > 0 || prod.wips[specs[`station_${letter}`].prevWip] <= 0} onClick={() => handleAction('WIP')}>WIP</button>}
-                  <button className="btn-send" disabled={!isMe || !isFull} onClick={() => handleAction('SEND')}>Send</button>
+                  <button disabled={!isMe || work.stockItems >= specs[`station_${letter}`].stockNeeded || prod.stocks[letter] <= 0} onClick={() => handleAction('STOCK')}>
+                    {t('game.btn_stock')}
+                  </button>
+                  {letter !== 'A' && (
+                    <button disabled={!isMe || work.wipItems > 0 || prod.wips[specs[`station_${letter}`].prevWip] <= 0} onClick={() => handleAction('WIP')}>
+                      {t('game.btn_wip')}
+                    </button>
+                  )}
+                  <button className="btn-send" disabled={!isMe || !isFull} onClick={() => handleAction('SEND')}>
+                    {t('game.btn_send')}
+                  </button>
                 </div>
                 
                 <div className="reference-gabarito">
-                  <div className="gabarito-title">Gabarito de Entrega</div>
+                  {/* Título do Gabarito Traduzido */}
+                  <div className="gabarito-title">{t('game.gabarito_title')}</div>
                   <div className={`cube-grid gabarito-grid ${letter === 'E' ? 'final-container-ref' : ''}`}>
                     {[...Array(9)].map((_, i) => (
                       <div key={`g-${i}`} className={`slot slot-gabarito ${gabaritoComp[i] ? `filled ${gabaritoComp[i]}` : 'empty-gabarito'}`} />
