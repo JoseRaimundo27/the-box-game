@@ -4,14 +4,15 @@ import { ref, onValue } from 'firebase/database';
 import { useGame } from '../context/GameContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area,
+  BarChart, Bar
 } from 'recharts';
 import './Results.css';
 
 const Results = () => {
   const { currentRoom } = useGame();
   const [data, setData] = useState([]);
-  const [kpis, setKpis] = useState({ totalTime: 0, avgWip: 0, financialImpact: 0 , completionRate: 0});
+  const [kpis, setKpis] = useState({ totalTime: 0, avgWip: 0, financialImpact: 0 , completionRate: 0, finalWip: 0});
   const [globalRank, setGlobalRank] = useState([]);
   const navigate = useNavigate();
 
@@ -63,12 +64,15 @@ const Results = () => {
           const lastCount = historyArray[historyArray.length - 1].count; // Pega o último produto feito
           const percentage = (lastCount / 100) * 100; // Calcula a porcentagem em relação à meta de 100
 
+          const finalWip = historyArray[historyArray.length - 1].wip;
+
           // setKpis com formatação garantida
           setKpis({
             totalTime: Number(totalTime).toFixed(1),
             avgWip: Number(avgWip).toFixed(2),
             financialImpact: financialImpact.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-            completionRate: percentage.toFixed(0)
+            completionRate: percentage.toFixed(0),
+            finalWip: finalWip
           });
         }
       }
@@ -94,6 +98,12 @@ const Results = () => {
           <h3>Lead Time Total</h3>
           <p className="value">{kpis.totalTime}s</p>
           <span className="label">Tempo de ciclo</span>
+        </div>
+
+        <div className="kpi-card">
+          <h3>WIP Total</h3>
+          <p className="value">{kpis.finalWip} un</p>
+          <span className="label">Peças que não foram concluídas</span>
         </div>
         
         <div className="kpi-card highlight">
@@ -134,13 +144,14 @@ const Results = () => {
           <h2>Acúmulo de Estoque (WIP)</h2>
           <div style={{ width: '100%', height: 300 }}>
             <ResponsiveContainer>
-              <AreaChart data={data}>
+             <BarChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="timeLabel" />
                 <YAxis />
                 <Tooltip />
-                <Area type="monotone" dataKey="wip" name="Itens no WIP" stroke="#f39c12" fill="#f39c12" fillOpacity={0.3} />
-              </AreaChart>
+                
+                <Bar dataKey="wip" name="Itens no WIP" fill="#f39c12" />
+             </BarChart>
             </ResponsiveContainer>
           </div>
         </div>

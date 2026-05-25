@@ -2,9 +2,9 @@
 TODO:
 Tem que ter um custo por caixinha Valor da caixinha variavel (1-5), custo que estão na mesa (estação de trabalho) e custo do que está no WIP in real time. 
 
-Criar um botao para dar as estatisticas antes, com uma porcentagem
+Criar um botao para dar as estatisticas antes, com uma porcentagem (V)
 
-adicionar uma caixinha com total number of wip 
+adicionar uma caixinha com total number of wip (V)
 
 Mostrar o Acúmulo de estoques como gráfico de barras
 
