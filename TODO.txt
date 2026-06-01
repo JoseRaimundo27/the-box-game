@@ -1,6 +1,7 @@
 
 TODO:
 Tem que ter um custo por caixinha Valor da caixinha variavel (1-5), custo que estão na mesa (estação de trabalho) e custo do que está no WIP in real time. 
+(V) Adicionado valores estaticos para as caixinhas, valor de cada bench e valor total dos wips
 
 Criar um botao para dar as estatisticas antes, com uma porcentagem (V)
 
@@ -8,7 +9,27 @@ adicionar uma caixinha com total number of wip (V)
 
 Mostrar o Acúmulo de estoques como gráfico de barras (V)
 
-Traduzir para espanhol*/ingles/portugues
+Traduzir para espanhol*/ingles/portugues (V)
 
 Investigar Azure para hostear o site. (V) -> Static Web Apps
+
+25/05:
+Criar um sistema de Rounds (talvez 3 rounds) e globais estatisticas;
+CRIAR UMA NOVA PAGINA COM ADM QUE POSSA RESETAR E PLAYERS NORMAIS NÃO PODEM;
+
+NO SELECTION TER UMA ENTRADA PARA COLOCAR O NOME DO PLAYER;
+
+NO GAME TIRAR O FLAG PARA CLICAR NO BOTÃO DE ESTATISTICAS; mudar a flag spanish to spain ; (V)
+
+Page para adjust em cada sala:PRICES, NUMBER OS BOXES; entre os rounds (ver se é fácil ou não) -> (PRIMEIRO SO ANTES DO JOGO PARA O PROXIMA SEMANA);
+
+Colocar limite de tempo de 6minutos para completar o jogo; (not yet);
+
+O KPI ECONOMICO MUDAR PARA COMO ESTAR NO EXCEL;
+
+Analisar excel e kpis;
+
+
+
+
 

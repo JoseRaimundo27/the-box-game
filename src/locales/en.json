@@ -1,4 +1,15 @@
 {
+  "role_selection": {
+    "title": "Industrial Production Simulator",
+    "subtitle": "Select your profile to access the factory",
+    "btn_player": "Enter as Player",
+    "btn_admin": "Instructor / Admin Access",
+    "pin_prompt": "Enter Admin PIN:",
+    "pin_placeholder": "Admin Password",
+    "btn_confirm": "Enter",
+    "btn_cancel": "Cancel",
+    "alert_error": "Incorrect PIN! Try again."
+  },
   "lobby": {
     "title": "The Box Game - Available Rooms",
     "subtitle": "Choose a room to start the production simulation.",
@@ -28,7 +39,10 @@
     "btn_stock": "Stock",
     "btn_wip": "WIP",
     "btn_send": "Send",
-    "gabarito_title": "Delivery Template"
+    "gabarito_title": "Delivery Template",
+    "bench_cost": "Cost on Bench:",
+    "wip_cost": "Total WIP Cost:"
+
   },"results": {
     "header_title": "Industrial Performance Report",
     "room_label": "Room:",
@@ -50,7 +64,8 @@
       "time_axis": "Time",
       "units_axis": "Units",
       "finished_products": "Finished Products",
-      "wip_items": "Items in WIP"
+      "wip_items": "Items in WIP",
+      "wip_value_legend": "Financial Value Trapped"
     },
     "ranking": {
       "title": "Global Benchmarking (Top Rooms)",

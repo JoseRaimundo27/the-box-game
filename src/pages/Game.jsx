@@ -3,18 +3,28 @@ import { db } from '../firebase/config';
 import { ref, onValue, runTransaction } from 'firebase/database';
 import { useGame } from '../context/GameContext';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next'; // <--- IMPORTANTE: Importando o hook de tradução
+import { useTranslation } from 'react-i18next';
 import './Game.css';
+
+// 1. DEFINIÇÃO ESTÁTICA DOS PREÇOS DAS CAIXINHAS
+const ITEM_PRICES = { A: 1, B: 2, C: 3, D: 4, E: 5 };
+
+// 2. CUSTO ACUMULADO UNITÁRIO DE CADA ESTÁGIO DO WIP
+const WIP_STAGE_PRICES = {
+  ab: ITEM_PRICES.A,                                                        // $1
+  bc: ITEM_PRICES.A + (3 * ITEM_PRICES.B),                                  // $7
+  cd: ITEM_PRICES.A + (3 * ITEM_PRICES.B) + ITEM_PRICES.C,                  // $10
+  de: ITEM_PRICES.A + (3 * ITEM_PRICES.B) + ITEM_PRICES.C + (2 * ITEM_PRICES.D) // $18
+};
 
 const Game = () => {
   const { currentRoom, myStation } = useGame();
   const [roomData, setRoomData] = useState(null);
-
   const navigate = useNavigate();
-  const { t } = useTranslation(); // <--- Habilitando a função t()
+  const { t, i18n } = useTranslation();
 
   const colors = { A: "blue-A", B: "green-B", C: "red-C", D: "grey-D", E: "purple-E" };
-  const META_PRODUCAO = 100; 
+  const META_PRODUCAO = 100;
 
   const specs = {
     station_A: { stockNeeded: 1, wipNeeded: 0, nextWip: 'ab' },
@@ -22,6 +32,16 @@ const Game = () => {
     station_C: { stockNeeded: 1, wipNeeded: 1, nextWip: 'cd', prevWip: 'bc' },
     station_D: { stockNeeded: 2, wipNeeded: 1, nextWip: 'de', prevWip: 'cd' },
     station_E: { stockNeeded: 2, wipNeeded: 1, nextWip: 'finish', prevWip: 'de' }
+  };
+
+  // Função auxiliar para formatar dinheiro em tempo real com base no idioma
+  const formatCurrency = (value) => {
+    if (i18n.language === 'en') {
+      return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    } else if (i18n.language === 'es') {
+      return value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 });
+    }
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
   const getGabaritoComposition = (letter) => {
@@ -47,7 +67,6 @@ const Game = () => {
     }
   }, [roomData?.production?.finished_total, navigate]);
 
-  // Carregamento traduzido
   if (!roomData) return <div className="loading">{t('game.loading')}</div>;
   const prod = roomData.production;
 
@@ -77,10 +96,16 @@ const Game = () => {
     return comp;
   };
 
+  // CÁLCULO DO VALOR FINANCEIRO REAL TOTAL DO WIP FLUTUANTE
+  const totalWipValue = 
+    ((prod.wips?.ab || 0) * WIP_STAGE_PRICES.ab) +
+    ((prod.wips?.bc || 0) * WIP_STAGE_PRICES.bc) +
+    ((prod.wips?.cd || 0) * WIP_STAGE_PRICES.cd) +
+    ((prod.wips?.de || 0) * WIP_STAGE_PRICES.de);
+
   const handleAction = (type) => {
     const sLetter = myStation.split('_')[1];
     const mySpec = specs[myStation];
-    
     const prodRef = ref(db, `rooms/${currentRoom}/production`);
 
     runTransaction(prodRef, (current) => {
@@ -106,17 +131,22 @@ const Game = () => {
         if (isFinished) { 
           current.finished_total++;
 
+          // CALCULANDO VALOR DO WIP DINAMICAMENTE PARA SALVAR NO HISTÓRICO
+          const ab = current.wips.ab || 0;
+          const bc = current.wips.bc || 0;
+          const cd = current.wips.cd || 0;
+          const de = current.wips.de || 0;
+          const snapshotWipValue = (ab * WIP_STAGE_PRICES.ab) + (bc * WIP_STAGE_PRICES.bc) + (cd * WIP_STAGE_PRICES.cd) + (de * WIP_STAGE_PRICES.de);
+
           const snapshot = {
             count: current.finished_total,
-            wip_total: (current.wips.ab || 0) + (current.wips.bc || 0) + (current.wips.cd || 0) + (current.wips.de || 0),
+            wip_total: ab + bc + cd + de,
+            wip_value: snapshotWipValue, // <--- ADICIONADO: Histórico agora monitora valor em dinheiro!
             timestamp: Date.now()
           };
 
           const historyRef = ref(db, `rooms/${currentRoom}/history/${snapshot.timestamp}`);
-          
-          import('firebase/database').then(({ set }) => {
-            set(historyRef, snapshot);
-          });
+          import('firebase/database').then(({ set }) => { set(historyRef, snapshot); });
         } else {
           current.wips[mySpec.nextWip]++;
         }
@@ -128,20 +158,16 @@ const Game = () => {
     });
   };
 
-  const handleForceEnd = () => {
-    navigate('/results');
-  };
-
   return (
     <div className="game-screen">
-      <div className="game-top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', backgroundColor: '#2c3e50', color: 'white' }}>
+      <div className="game-top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px'}}>
         <div className="production-progress">
-          {/* Progresso Traduzido */}
           <strong>{t('game.progress')}</strong> {prod.finished_total} / {META_PRODUCAO}
+          <span style={{ marginLeft: '25px', color: '#e67e22', fontWeight: 'bold' }}>
+            {t('game.wip_cost')} {formatCurrency(totalWipValue)}
+          </span>
         </div>
-        <button 
-          onClick={handleForceEnd} 
-          style={{ backgroundColor: '#f39c12', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+        <button onClick={() => navigate('/results')} style={{ backgroundColor: '#f39c12', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
           {t('game.btn_force_end')}
         </button>
       </div>
@@ -152,13 +178,24 @@ const Game = () => {
           const work = prod.workAreas[letter];
           const composition = getComposition(letter, work);
           const isFull = composition.length === (specs[`station_${letter}`].stockNeeded + (letter === 'A' ? 0 : (letter === 'B' ? 1 : (letter === 'C' ? 4 : (letter === 'D' ? 5 : 7)))));
-
           const gabaritoComp = getGabaritoComposition(letter);
+
+          // CÁLCULO EM TEMPO REAL DO CUSTO NA MESA DA ESTAÇÃO ATUAL
+          const costOnBench = composition.reduce((acc, currentClass) => {
+            const itemLetter = currentClass.split('-')[1]; // Extrai a letra da classe (ex: 'blue-A' vira 'A')
+            return acc + (ITEM_PRICES[itemLetter] || 0);
+          }, 0);
+
           return (
             <React.Fragment key={letter}>
               <div className={`station-card ${isMe ? 'is-me' : ''}`}>
-                {/* Nome da Estação Traduzido */}
-                <div className="station-label">{t('game.station_label')} {letter}</div>
+                <div className="station-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{t('game.station_label')} {letter}</span>
+                  {/* EXIBIÇÃO DO CUSTO NA MESA */}
+                  <span style={{ color: '#2ecc71', fontSize: '0.85em' }}>
+                    {t('game.bench_cost')} {formatCurrency(costOnBench)}
+                  </span>
+                </div>
                 
                 <div className="work-bench">
                   <div className={`cube-grid ${letter === 'E' ? 'final-container' : ''}`}>
@@ -168,7 +205,6 @@ const Game = () => {
                   </div>
                 </div>
                 
-                {/* Botões de Ação Traduzidos */}
                 <div className="station-controls">
                   <button disabled={!isMe || work.stockItems >= specs[`station_${letter}`].stockNeeded || prod.stocks[letter] <= 0} onClick={() => handleAction('STOCK')}>
                     {t('game.btn_stock')}
@@ -184,7 +220,6 @@ const Game = () => {
                 </div>
                 
                 <div className="reference-gabarito">
-                  {/* Título do Gabarito Traduzido */}
                   <div className="gabarito-title">{t('game.gabarito_title')}</div>
                   <div className={`cube-grid gabarito-grid ${letter === 'E' ? 'final-container-ref' : ''}`}>
                     {[...Array(9)].map((_, i) => (
@@ -192,8 +227,8 @@ const Game = () => {
                     ))}
                   </div>
                 </div>
-
               </div>
+              
               {letter !== 'E' && (
                 <div className="wip-flow-indicator">
                   <div className="wip-triangle"><span className="wip-value">{prod.wips[specs[`station_${letter}`].nextWip]}</span></div>

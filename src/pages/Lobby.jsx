@@ -3,7 +3,7 @@ import { db } from '../firebase/config';
 import { ref, onValue, set } from 'firebase/database';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
-import { useTranslation } from 'react-i18next'; // <--- IMPORTANTE: Importamos o hook de tradução
+import { useTranslation } from 'react-i18next'; 
 import './Lobby.css';
 import resetData from '../../reset.json'; 
 
@@ -11,7 +11,10 @@ const Lobby = () => {
   const [rooms, setRooms] = useState({});
   const { setCurrentRoom } = useGame();
   const navigate = useNavigate();
-  const { t } = useTranslation(); // <--- Habilitamos a função t() que busca as palavras nos JSONs
+  const { t } = useTranslation(); 
+
+  // VERIFICAÇÃO SE É ADMINISTRADOR RESGATADA DA SESSÃO
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 
   useEffect(() => {
     const roomsRef = ref(db, 'rooms');
@@ -34,7 +37,7 @@ const Lobby = () => {
 
     if (confirmacao) {
       try {
-        const roomsRef = ref(db, 'rooms');
+        const roomsRef = ref(db, '/');
         await set(roomsRef, resetData);
         alert("Banco de dados reiniciado com sucesso!");
       } catch (error) {
@@ -51,11 +54,12 @@ const Lobby = () => {
   return (
     <div className="lobby-container">
       <div className="lobby-header-actions">
-        {/* USANDO TRADUÇÃO: Troca de texto fixo por t('chave.filho') */}
         <h1>{t('lobby.title')}</h1>
-        <button className="btn-danger-reset" onClick={handleResetDatabase}>
-          {t('lobby.btn_reset')}
-        </button>
+        {isAdmin && (
+          <button className="btn-danger-reset" onClick={handleResetDatabase}>
+            {t('lobby.btn_reset')}
+          </button>
+        )}
       </div>
       
       <p>{t('lobby.subtitle')}</p>

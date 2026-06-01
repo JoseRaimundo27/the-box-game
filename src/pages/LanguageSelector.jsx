@@ -30,7 +30,7 @@ const LanguageSelector = () => {
         onClick={() => changeLanguage('es')}
         title="Español (Chile)"
       >
-        🇨🇱
+        🇪🇸
       </button>
     </div>
   );

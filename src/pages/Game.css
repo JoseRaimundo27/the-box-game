@@ -16,6 +16,10 @@
   margin-bottom: 10px;
 }
 
+.game-top-bar {
+  margin-top: 50px;
+}
+
 .total-counter {
   font-size: 1.2rem;
   font-weight: bold;
@@ -58,6 +62,7 @@
 
 /* Destaque para a estação do jogador logado */
 .is-me {
+  min-height: 360px;
   border: 3px solid #0984e3;
   box-shadow: 0 0 10px rgba(9, 132, 227, 0.2);
   transform: scale(1.02);
@@ -65,6 +70,9 @@
 }
 
 .station-label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   font-weight: bold;
   text-align: center;
   font-size: 0.95rem;

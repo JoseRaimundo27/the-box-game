@@ -1,4 +1,15 @@
 {
+  "role_selection": {
+    "title": "Simulador de Producción Industrial",
+    "subtitle": "Seleccione su perfil para ingresar a la fábrica",
+    "btn_player": "Entrar como Operario / Jugador",
+    "btn_admin": "Acceso Instructor / ADM",
+    "pin_prompt": "Ingrese el PIN de Administrador:",
+    "pin_placeholder": "Contraseña ADM",
+    "btn_confirm": "Ingresar",
+    "btn_cancel": "Cancelar",
+    "alert_error": "¡PIN Incorrecto! Intente nuevamente."
+  },
   "lobby": {
     "title": "The Box Game - Salas Disponibles",
     "subtitle": "Elige una sala para iniciar la simulación de producción.",
@@ -51,7 +62,10 @@
       "time_axis": "Tiempo",
       "units_axis": "Unidades",
       "finished_products": "Productos Terminados",
-      "wip_items": "Artículos en el WIP"
+      "wip_items": "Artículos en el WIP",
+      "wip_value_legend": "Valor Financiero Parado",
+      "bench_cost": "Costo en Mesa:",
+      "wip_cost": "Costo del WIP Total:"
     },
     "ranking": {
       "title": "Benchmarking Global (Top Salas)",

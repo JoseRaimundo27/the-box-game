@@ -3,7 +3,7 @@ import { db } from '../firebase/config';
 import { ref, onValue } from 'firebase/database';
 import { useGame } from '../context/GameContext';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next'; // <--- IMPORTANTE: Importando o hook de tradução
+import { useTranslation } from 'react-i18next';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar
@@ -16,7 +16,7 @@ const Results = () => {
   const [kpis, setKpis] = useState({ totalTime: 0, avgWip: 0, financialImpact: 0 , completionRate: 0, finalWip: 0});
   const [globalRank, setGlobalRank] = useState([]);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation(); // <--- Habilitando a função t() e a instância i18n
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const roomID = currentRoom || "sala_01"; 
@@ -29,7 +29,8 @@ const Results = () => {
           .map(([key, val]) => ({
             timestamp: Number(val.timestamp) || parseInt(key) || Date.now(),
             count: Number(val.count) || 0,
-            wip: Number(val.wip_total) || 0 
+            wip: Number(val.wip_total) || 0,
+            wipPriceValue: Number(val.wip_value) || 0 // <--- CAPTURA O VALOR MONETÁRIO REAL SALVO DO BANCO
           }))
           .sort((a, b) => a.timestamp - b.timestamp);
 
@@ -48,19 +49,20 @@ const Results = () => {
           
           const sumWip = historyArray.reduce((acc, item) => acc + item.wip, 0);
           const avgWip = sumWip / historyArray.length;
-          const financialImpact = sumWip * 10;
+          
+          // O Impacto Financeiro Final passa a ser o valor real exato do último snapshot gerado
+          const finalFinancialValue = historyArray[historyArray.length - 1].wipPriceValue;
 
           const lastCount = historyArray[historyArray.length - 1].count; 
           const percentage = (lastCount / 100) * 100; 
-
           const finalWip = historyArray[historyArray.length - 1].wip;
 
-          // FORMATAÇÃO FINANCEIRA LOCALIZADA DINÂMICA
-          let formattedFinancial = financialImpact.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          // FORMATAÇÃO FINANCEIRA DA MOEDA
+          let formattedFinancial = finalFinancialValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
           if (i18n.language === 'en') {
-            formattedFinancial = financialImpact.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            formattedFinancial = finalFinancialValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
           } else if (i18n.language === 'es') {
-            formattedFinancial = financialImpact.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 });
+            formattedFinancial = finalFinancialValue.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 });
           }
 
           setKpis({
@@ -75,7 +77,7 @@ const Results = () => {
     });
 
     return () => unsubscribe();
-  }, [currentRoom, i18n.language]); // Adicionado i18n.language para recalcular a moeda na hora se mudar o idioma
+  }, [currentRoom, i18n.language]);
 
   const resetGame = () => {
     navigate('/');
@@ -146,7 +148,8 @@ const Results = () => {
                 <XAxis dataKey="timeLabel" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="wip" name={t('results.charts.wip_items')} fill="#f39c12" />
+                {/* GRÁFICO RECONFIGURADO: Agora mostra o valor monetário real do desperdício em vez de apenas a quantidade crua */}
+                <Bar dataKey="wipPriceValue" name={t('results.charts.wip_value_legend')} fill="#e74c3c" />
              </BarChart>
             </ResponsiveContainer>
           </div>

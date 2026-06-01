@@ -1,4 +1,15 @@
 {
+  "role_selection": {
+    "title": "Simulador de Produção Industrial",
+    "subtitle": "Selecione o seu perfil para acessar a fábrica",
+    "btn_player": "Entrar como Jogador",
+    "btn_admin": "Acesso Instrutor / ADM",
+    "pin_prompt": "Insira o PIN de Administrador:",
+    "pin_placeholder": "Senha do ADM",
+    "btn_confirm": "Entrar",
+    "btn_cancel": "Cancelar",
+    "alert_error": "PIN Incorreto! Tente novamente."
+  },
   "lobby": {
     "title": "The Box Game - Salas Disponíveis",
     "subtitle": "Escolha uma sala para iniciar a simulação de produção.",
@@ -28,7 +39,9 @@
     "btn_stock": "Estoque",
     "btn_wip": "WIP",
     "btn_send": "Enviar",
-    "gabarito_title": "Gabarito de Entrega"
+    "gabarito_title": "Gabarito de Entrega",
+    "bench_cost": "Custo na Mesa:",
+    "wip_cost": "Custo do WIP Total:"
   },
   "results": {
     "header_title": "Relatório de Performance Industrial",
@@ -51,7 +64,8 @@
       "time_axis": "Tempo",
       "units_axis": "Unidades",
       "finished_products": "Produtos Acabados",
-      "wip_items": "Itens no WIP"
+      "wip_items": "Itens no WIP",
+      "wip_value_legend": "Valor Financeiro Parado"
     },
     "ranking": {
       "title": "Benchmarking Global (Top Salas)",
