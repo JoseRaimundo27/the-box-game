@@ -6,54 +6,78 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './Game.css';
 
-// 1. DEFINIÇÃO ESTÁTICA DOS PREÇOS DAS CAIXINHAS
-const ITEM_PRICES = { A: 1, B: 2, C: 3, D: 4, E: 5 };
-
-// 2. CUSTO ACUMULADO UNITÁRIO DE CADA ESTÁGIO DO WIP
-const WIP_STAGE_PRICES = {
-  ab: ITEM_PRICES.A,                                                        // $1
-  bc: ITEM_PRICES.A + (3 * ITEM_PRICES.B),                                  // $7
-  cd: ITEM_PRICES.A + (3 * ITEM_PRICES.B) + ITEM_PRICES.C,                  // $10
-  de: ITEM_PRICES.A + (3 * ITEM_PRICES.B) + ITEM_PRICES.C + (2 * ITEM_PRICES.D) // $18
-};
-
 const Game = () => {
   const { currentRoom, myStation } = useGame();
   const [roomData, setRoomData] = useState(null);
+  const [localStartTime] = useState(Date.now()); // Sincronização de backup do timer
+  const [timeLeft, setTimeLeft] = useState(null);
+  
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
   const colors = { A: "blue-A", B: "green-B", C: "red-C", D: "grey-D", E: "purple-E" };
-  const META_PRODUCAO = 100;
 
-  const specs = {
-    station_A: { stockNeeded: 1, wipNeeded: 0, nextWip: 'ab' },
-    station_B: { stockNeeded: 3, wipNeeded: 1, nextWip: 'bc', prevWip: 'ab' },
-    station_C: { stockNeeded: 1, wipNeeded: 1, nextWip: 'cd', prevWip: 'bc' },
-    station_D: { stockNeeded: 2, wipNeeded: 1, nextWip: 'de', prevWip: 'cd' },
-    station_E: { stockNeeded: 2, wipNeeded: 1, nextWip: 'finish', prevWip: 'de' }
+  // 1. CARREGAMENTO DINÂMICO DAS CONFIGURAÇÕES DA SALA (com fallback para valores padrão)
+  const config = roomData?.config || {
+    prices: { A: 1, B: 2, C: 3, D: 4, E: 5 },
+    stockNeeded: { A: 1, B: 3, C: 1, D: 2, E: 2 },
+    productionGoal: 100,
+    timeLimit: 300
   };
 
-  // Função auxiliar para formatar dinheiro em tempo real com base no idioma
+  const ITEM_PRICES = config.prices;
+  const META_PRODUCAO = config.productionGoal;
+
+  // 2. REGRAS DA ESTAÇÃO AGORA SÃO DINÂMICAS
+  const specs = {
+    station_A: { stockNeeded: config.stockNeeded.A, wipNeeded: 0, nextWip: 'ab' },
+    station_B: { stockNeeded: config.stockNeeded.B, wipNeeded: 1, nextWip: 'bc', prevWip: 'ab' },
+    station_C: { stockNeeded: config.stockNeeded.C, wipNeeded: 1, nextWip: 'cd', prevWip: 'bc' },
+    station_D: { stockNeeded: config.stockNeeded.D, wipNeeded: 1, nextWip: 'de', prevWip: 'cd' },
+    station_E: { stockNeeded: config.stockNeeded.E, wipNeeded: 1, nextWip: 'finish', prevWip: 'de' }
+  };
+
+  // 3. CÁLCULO FINANCEIRO DINÂMICO DOS ESTÁGIOS DO WIP
+  const WIP_STAGE_PRICES = {
+    ab: (config.stockNeeded.A * ITEM_PRICES.A),
+    bc: (config.stockNeeded.A * ITEM_PRICES.A) + (config.stockNeeded.B * ITEM_PRICES.B),
+    cd: (config.stockNeeded.A * ITEM_PRICES.A) + (config.stockNeeded.B * ITEM_PRICES.B) + (config.stockNeeded.C * ITEM_PRICES.C),
+    de: (config.stockNeeded.A * ITEM_PRICES.A) + (config.stockNeeded.B * ITEM_PRICES.B) + (config.stockNeeded.C * ITEM_PRICES.C) + (config.stockNeeded.D * ITEM_PRICES.D)
+  };
+
+  // Função auxiliar para formatação de moeda
   const formatCurrency = (value) => {
-    if (i18n.language === 'en') {
-      return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    } else if (i18n.language === 'es') {
-      return value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 });
-    }
+    if (i18n.language === 'en') return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    if (i18n.language === 'es') return value.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 });
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
-  const getGabaritoComposition = (letter) => {
-    let g = [];
-    if (letter === 'A') g.push(colors.A);
-    if (letter === 'B') g.push(colors.A, colors.B, colors.B, colors.B);
-    if (letter === 'C') g.push(colors.A, colors.B, colors.B, colors.B, colors.C);
-    if (letter === 'D') g.push(colors.A, colors.B, colors.B, colors.B, colors.C, colors.D, colors.D);
-    if (letter === 'E') g.push(colors.A, colors.B, colors.B, colors.B, colors.C, colors.D, colors.D, colors.E, colors.E);
-    return g;
+  // 4. FUNÇÕES DINÂMICAS DE MONTAGEM DOS BLOCOS NA MESA
+  // Verifica quais blocos de estações anteriores já compõem o WIP que chegou
+  const buildWipBlocks = (stationLetter) => {
+    let blocks = [];
+    const order = ['A', 'B', 'C', 'D', 'E'];
+    for (let l of order) {
+      if (l === stationLetter) break;
+      for (let i = 0; i < config.stockNeeded[l]; i++) blocks.push(colors[l]);
+    }
+    return blocks;
   };
 
+  const getComposition = (letter, work) => {
+    let comp = [];
+    if (work.wipItems > 0) comp.push(...buildWipBlocks(letter));
+    for (let i = 0; i < work.stockItems; i++) comp.push(colors[letter]);
+    return comp;
+  };
+
+  const getGabaritoComposition = (letter) => {
+    let comp = buildWipBlocks(letter);
+    for (let i = 0; i < config.stockNeeded[letter]; i++) comp.push(colors[letter]);
+    return comp;
+  };
+
+  // Conexão principal com o Firebase
   useEffect(() => {
     if (!currentRoom) return;
     const roomRef = ref(db, `rooms/${currentRoom}`);
@@ -61,40 +85,37 @@ const Game = () => {
     return () => unsubscribe();
   }, [currentRoom]);
 
+  // Efeito de Encerramento por Meta ou por Tempo
   useEffect(() => {
+    // 1. Checa se bateu a meta de produção configurada
     if (roomData?.production?.finished_total >= META_PRODUCAO) {
       navigate('/results');
+      return;
     }
-  }, [roomData?.production?.finished_total, navigate]);
+
+    // 2. Lógica do Timer (Contagem Regressiva)
+    const limit = roomData?.config?.timeLimit || 0;
+    if (limit > 0) {
+      const start = roomData?.metadata?.startedAt || localStartTime;
+      const interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - start) / 1000);
+        const remaining = limit - elapsed;
+        
+        if (remaining <= 0) {
+          clearInterval(interval);
+          navigate('/results'); // Força o fim quando o tempo zera!
+        } else {
+          setTimeLeft(remaining);
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setTimeLeft(null); // Jogo de tempo infinito
+    }
+  }, [roomData?.production?.finished_total, roomData?.config?.timeLimit, roomData?.metadata?.startedAt, META_PRODUCAO, navigate, localStartTime]);
 
   if (!roomData) return <div className="loading">{t('game.loading')}</div>;
   const prod = roomData.production;
-
-  const getComposition = (letter, work) => {
-    let comp = [];
-    const hasWip = work.wipItems > 0;
-
-    if (letter === 'A') {
-      if (work.stockItems > 0) comp.push(colors.A);
-    } 
-    else if (letter === 'B') {
-      if (hasWip) comp.push(colors.A); 
-      for (let i = 0; i < work.stockItems; i++) comp.push(colors.B); 
-    } 
-    else if (letter === 'C') {
-      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B); 
-      if (work.stockItems > 0) comp.push(colors.C); 
-    } 
-    else if (letter === 'D') {
-      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B, colors.C); 
-      for (let i = 0; i < work.stockItems; i++) comp.push(colors.D); 
-    } 
-    else if (letter === 'E') {
-      if (hasWip) comp.push(colors.A, colors.B, colors.B, colors.B, colors.C, colors.D, colors.D); 
-      for (let i = 0; i < work.stockItems; i++) comp.push(colors.E); 
-    }
-    return comp;
-  };
 
   // CÁLCULO DO VALOR FINANCEIRO REAL TOTAL DO WIP FLUTUANTE
   const totalWipValue = 
@@ -131,7 +152,7 @@ const Game = () => {
         if (isFinished) { 
           current.finished_total++;
 
-          // CALCULANDO VALOR DO WIP DINAMICAMENTE PARA SALVAR NO HISTÓRICO
+          // Grava no histórico de tempo usando o preço dinâmico do turno
           const ab = current.wips.ab || 0;
           const bc = current.wips.bc || 0;
           const cd = current.wips.cd || 0;
@@ -141,7 +162,7 @@ const Game = () => {
           const snapshot = {
             count: current.finished_total,
             wip_total: ab + bc + cd + de,
-            wip_value: snapshotWipValue, // <--- ADICIONADO: Histórico agora monitora valor em dinheiro!
+            wip_value: snapshotWipValue,
             timestamp: Date.now()
           };
 
@@ -160,10 +181,19 @@ const Game = () => {
 
   return (
     <div className="game-screen">
-      <div className="game-top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px'}}>
+      <div className="game-top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px', backgroundColor: '#2c3e50', color: 'white' }}>
         <div className="production-progress">
           <strong>{t('game.progress')}</strong> {prod.finished_total} / {META_PRODUCAO}
-          <span style={{ marginLeft: '25px', color: '#e67e22', fontWeight: 'bold' }}>
+          
+          {/* TIMER REGRESSIVO */}
+          {timeLeft !== null && (
+            <span style={{ marginLeft: '25px', color: '#e74c3c', fontWeight: 'bold', fontSize: '1.1em' }}>
+              ⏱️ {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
+            </span>
+          )}
+
+          {/* EXIBIÇÃO DO CUSTO WIP */}
+          <span style={{ marginLeft: '25px', color: '#f1c40f', fontWeight: 'bold' }}>
             {t('game.wip_cost')} {formatCurrency(totalWipValue)}
           </span>
         </div>
@@ -176,13 +206,20 @@ const Game = () => {
         {['A', 'B', 'C', 'D', 'E'].map((letter) => {
           const isMe = myStation === `station_${letter}`;
           const work = prod.workAreas[letter];
+          
           const composition = getComposition(letter, work);
-          const isFull = composition.length === (specs[`station_${letter}`].stockNeeded + (letter === 'A' ? 0 : (letter === 'B' ? 1 : (letter === 'C' ? 4 : (letter === 'D' ? 5 : 7)))));
           const gabaritoComp = getGabaritoComposition(letter);
+          
+          // Lógica de "isFull" atualizada! Se baseia estritamente no tamanho do array de gabarito gerado
+          const totalExpectedBlocks = gabaritoComp.length;
+          const isFull = composition.length === totalExpectedBlocks;
+          
+          // Garante que o grid na UI não quebre se o Admin pedir mais de 9 blocos na mesma mesa
+          const gridSlotsCount = Math.max(9, totalExpectedBlocks);
 
-          // CÁLCULO EM TEMPO REAL DO CUSTO NA MESA DA ESTAÇÃO ATUAL
+          // CÁLCULO DO CUSTO NA MESA DINÂMICO
           const costOnBench = composition.reduce((acc, currentClass) => {
-            const itemLetter = currentClass.split('-')[1]; // Extrai a letra da classe (ex: 'blue-A' vira 'A')
+            const itemLetter = currentClass.split('-')[1]; 
             return acc + (ITEM_PRICES[itemLetter] || 0);
           }, 0);
 
@@ -191,7 +228,6 @@ const Game = () => {
               <div className={`station-card ${isMe ? 'is-me' : ''}`}>
                 <div className="station-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>{t('game.station_label')} {letter}</span>
-                  {/* EXIBIÇÃO DO CUSTO NA MESA */}
                   <span style={{ color: '#2ecc71', fontSize: '0.85em' }}>
                     {t('game.bench_cost')} {formatCurrency(costOnBench)}
                   </span>
@@ -199,7 +235,7 @@ const Game = () => {
                 
                 <div className="work-bench">
                   <div className={`cube-grid ${letter === 'E' ? 'final-container' : ''}`}>
-                    {[...Array(9)].map((_, i) => (
+                    {[...Array(gridSlotsCount)].map((_, i) => (
                       <div key={i} className={`slot ${composition[i] ? `filled ${composition[i]}` : 'empty'}`} />
                     ))}
                   </div>
@@ -222,7 +258,7 @@ const Game = () => {
                 <div className="reference-gabarito">
                   <div className="gabarito-title">{t('game.gabarito_title')}</div>
                   <div className={`cube-grid gabarito-grid ${letter === 'E' ? 'final-container-ref' : ''}`}>
-                    {[...Array(9)].map((_, i) => (
+                    {[...Array(gridSlotsCount)].map((_, i) => (
                       <div key={`g-${i}`} className={`slot slot-gabarito ${gabaritoComp[i] ? `filled ${gabaritoComp[i]}` : 'empty-gabarito'}`} />
                     ))}
                   </div>

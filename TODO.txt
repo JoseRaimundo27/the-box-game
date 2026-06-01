@@ -15,7 +15,8 @@ Investigar Azure para hostear o site. (V) -> Static Web Apps
 
 25/05:
 Criar um sistema de Rounds (talvez 3 rounds) e globais estatisticas;
-CRIAR UMA NOVA PAGINA COM ADM QUE POSSA RESETAR E PLAYERS NORMAIS NÃO PODEM;
+
+CRIAR UMA NOVA PAGINA COM ADM QUE POSSA RESETAR E PLAYERS NORMAIS NÃO PODEM; (V)
 
 NO SELECTION TER UMA ENTRADA PARA COLOCAR O NOME DO PLAYER;
 

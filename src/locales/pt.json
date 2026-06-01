@@ -11,14 +11,26 @@
     "alert_error": "PIN Incorreto! Tente novamente."
   },
   "lobby": {
-    "title": "The Box Game - Salas Disponíveis",
-    "subtitle": "Escolha uma sala para iniciar a simulação de produção.",
-    "btn_reset": "🔄 Resetar Fábrica (Limpar Tudo)",
+    "title": "Lobby de Salas",
+    "subtitle": "Selecione uma sala disponível para entrar na linha de montagem.",
+    "btn_reset": "⚠️ Resetar Banco",
     "status_waiting": "Aguardando",
     "status_playing": "Em Jogo",
     "players": "Jogadores:",
     "btn_full": "Sala Cheia",
     "btn_enter": "Entrar na Sala"
+  },
+  "config_modal": {
+    "title": "Configuração Avançada da Sala:",
+    "tab_prices": "Preços das Caixas ($)",
+    "tab_stations": "Demanda por Estação (Qtd)",
+    "tab_rules": "Regras do Turno",
+    "production_goal": "Meta de Produção (Unidades):",
+    "time_limit": "Tempo Limite do Turno (Segundos):",
+    "time_limit_sub": "(0 para tempo infinito)",
+    "btn_save": "💾 Salvar Configurações",
+    "btn_close": "Fechar",
+    "alert_success": "Configurações aplicadas com sucesso para a sala!"
   },
   "selection": {
     "loading": "Carregando sala...",

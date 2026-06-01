@@ -11,14 +11,26 @@
     "alert_error": "Incorrect PIN! Try again."
   },
   "lobby": {
-    "title": "The Box Game - Available Rooms",
-    "subtitle": "Choose a room to start the production simulation.",
-    "btn_reset": "🔄 Reset Factory (Clear All)",
+    "title": "Room Lobby",
+    "subtitle": "Select an available room to enter the assembly line.",
+    "btn_reset": "⚠️ Reset Database",
     "status_waiting": "Waiting",
-    "status_playing": "Playing",
+    "status_playing": "In Game",
     "players": "Players:",
-    "btn_full": "Room Full",
-    "btn_enter": "Join Room"
+    "btn_full": "Full Room",
+    "btn_enter": "Enter Room"
+  },
+  "config_modal": {
+    "title": "Advanced Room Config:",
+    "tab_prices": "Box Prices ($)",
+    "tab_stations": "Station Demand (Qty)",
+    "tab_rules": "Shift Rules",
+    "production_goal": "Production Goal (Units):",
+    "time_limit": "Shift Time Limit (Seconds):",
+    "time_limit_sub": "(0 for infinite time)",
+    "btn_save": "💾 Save Configurations",
+    "btn_close": "Close",
+    "alert_success": "Configurations successfully applied to the room!"
   },
   "selection": {
     "loading": "Loading room...",
