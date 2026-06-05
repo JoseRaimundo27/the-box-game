@@ -86,8 +86,16 @@
       "th_lead_time": "Lead Time Total",
       "th_status": "Status",
       "your_perf": "Sua Performance",
-      "finished": "Finalizado"
+      "finished": "Finalizado",
+      "goal": "Meta Concluída",
+      "avarage_wip": "Média de WIP"
     },
+    "comparative": {
+    "s_curve_title": "Curvas S de Produção Comparadas",
+    "wip_cost_title": "Comparação do Custo de Estoque Parado (WIP)",
+    "time_axis": "Tempo Decorrido (segundos)"
+    },
+    
     "actions": {
       "btn_back_factory": "Voltar para a Fábrica",
       "btn_new_game": "Nova Partida"

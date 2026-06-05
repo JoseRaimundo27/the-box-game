@@ -86,8 +86,16 @@
       "th_lead_time": "Total Lead Time",
       "th_status": "Status",
       "your_perf": "Your Performance",
-      "finished": "Finished"
+      "finished": "Finished",
+      "goal": "Goal achieved",
+      "avarage_wip": "Average WIP"
+      
     },
+    "comparative": {
+    "s_curve_title": "Compared Production S-Curves",
+    "wip_cost_title": "Compared Work-In-Process (WIP) Financial Cost",
+    "time_axis": "Elapsed Time (seconds)"
+  },
     "actions": {
       "btn_back_factory": "Return to Factory",
       "btn_new_game": "New Match"
