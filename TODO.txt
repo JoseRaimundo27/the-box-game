@@ -14,7 +14,9 @@ Traduzir para espanhol*/ingles/portugues (V)
 Investigar Azure para hostear o site. (V) -> Static Web Apps
 
 25/05:
-Criar um sistema de Rounds (talvez 3 rounds) e globais estatisticas;
+Criar um sistema de Rounds (talvez 3 rounds) 
+
+globais estatisticas; 
 
 CRIAR UMA NOVA PAGINA COM ADM QUE POSSA RESETAR E PLAYERS NORMAIS NÃO PODEM; (V)
 
@@ -22,9 +24,9 @@ NO SELECTION TER UMA ENTRADA PARA COLOCAR O NOME DO PLAYER;
 
 NO GAME TIRAR O FLAG PARA CLICAR NO BOTÃO DE ESTATISTICAS; mudar a flag spanish to spain ; (V)
 
-Page para adjust em cada sala:PRICES, NUMBER OS BOXES; entre os rounds (ver se é fácil ou não) -> (PRIMEIRO SO ANTES DO JOGO PARA O PROXIMA SEMANA);
+Page para adjust em cada sala:PRICES, NUMBER OS BOXES; (V) entre os rounds (ver se é fácil ou não) -> (PRIMEIRO SO ANTES DO JOGO PARA O PROXIMA SEMANA);
 
-Colocar limite de tempo de 6minutos para completar o jogo; (not yet);
+Colocar limite de tempo de 6minutos para completar o jogo; (not yet); (V)
 
 O KPI ECONOMICO MUDAR PARA COMO ESTAR NO EXCEL;
 
