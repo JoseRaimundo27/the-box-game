@@ -59,21 +59,17 @@
       "lead_time_sub": "Cycle time",
       "wip_total": "Total WIP",
       "wip_total_sub": "Unfinished pieces",
-      "financial": "WIP Financial Impact",
+      "financial": "Profit ($)",
       "financial_sub": "Cost of Stagnant Inventory",
-      "avg_wip": "Average WIP",
-      "avg_wip_sub": "Items waiting",
-      "percentage": "Percentage",
+      "percentage": "Production",
       "percentage_sub": "Of Delivered Demand"
     },
     "charts": {
       "s_curve_title": "Production S-Curve (Accumulated)",
-      "wip_title": "Stock Accumulation (WIP)",
       "time_axis": "Time",
       "units_axis": "Units",
       "finished_products": "Finished Products",
-      "wip_items": "Items in WIP",
-      "wip_value_legend": "Financial Value Trapped"
+      "wip_items": "Items in WIP"
     },
     "ranking": {
       "title": "Global Benchmarking (Top Rooms)",

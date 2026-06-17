@@ -59,21 +59,17 @@
       "lead_time_sub": "Tiempo de ciclo",
       "wip_total": "WIP Total",
       "wip_total_sub": "Piezas que no fueron terminadas",
-      "financial": "Impacto Financiero del WIP",
+      "financial": "Profit ($)",
       "financial_sub": "Costo de Inventario Parado",
-      "avg_wip": "Promedio de WIP",
-      "avg_wip_sub": "Artículos en espera",
-      "percentage": "Porcentaje",
+      "percentage": "Production",
       "percentage_sub": "De la Demanda Entregada"
     },
     "charts": {
       "s_curve_title": "Curva S de Producción (Acumulado)",
-      "wip_title": "Acumulación de Stock (WIP)",
       "time_axis": "Tiempo",
       "units_axis": "Unidades",
       "finished_products": "Productos Terminados",
-      "wip_items": "Artículos en el WIP",
-      "wip_value_legend": "Valor Financiero Parado"
+      "wip_items": "Artículos en el WIP"
     },
     "ranking": {
       "title": "Benchmarking Global (Top Salas)",

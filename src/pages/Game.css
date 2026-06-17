@@ -50,7 +50,6 @@
   flex: 1; /* Distribui o espaço igualmente */
   min-width: 0; /* Permite que o flex-item encolha conforme necessário */
   max-width: 190px;
-  min-height: 400px;
   background: white;
   border: 2px solid #dfe6e9;
   border-radius: 8px;
@@ -63,7 +62,7 @@
 
 /* Destaque para a estação do jogador logado */
 .is-me {
-  min-height: 360px;
+  min-height: 400px;
   border: 3px solid #0984e3;
   box-shadow: 0 0 10px rgba(9, 132, 227, 0.2);
   transform: scale(1.02);
