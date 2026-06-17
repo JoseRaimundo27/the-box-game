@@ -16,7 +16,7 @@ Investigar Azure para hostear o site. (V) -> Static Web Apps
 25/05:
 Criar um sistema de Rounds (talvez 3 rounds) 
 
-globais estatisticas; 
+globais estatisticas (V)
 
 CRIAR UMA NOVA PAGINA COM ADM QUE POSSA RESETAR E PLAYERS NORMAIS NÃO PODEM; (V)
 
@@ -31,6 +31,13 @@ Colocar limite de tempo de 6minutos para completar o jogo; (not yet); (V)
 O KPI ECONOMICO MUDAR PARA COMO ESTAR NO EXCEL;
 
 Analisar excel e kpis;
+
+05/06
+Change stock to ARROW TO UP
+Implement Round System (3 rounds)
+Statistics like in the ppt
+Waste can be a amount of clicks of the players
+
 
 
 

@@ -48,12 +48,8 @@
     "progress": "Progress:",
     "btn_force_end": "📊 End Shift (Statistics)",
     "station_label": "Station",
-    "btn_stock": "Stock",
-    "btn_wip": "WIP",
-    "btn_send": "Send",
     "gabarito_title": "Delivery Template",
-    "bench_cost": "Cost on Bench:",
-    "wip_cost": "Total WIP Cost:"
+    "stock_per_work": "Station Inventory"
 
   },"results": {
     "header_title": "Industrial Performance Report",

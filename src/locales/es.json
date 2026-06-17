@@ -48,10 +48,8 @@
     "progress": "Avance:",
     "btn_force_end": "📊 Terminar Turno (Estadísticas)",
     "station_label": "Estación",
-    "btn_stock": "Stock",
-    "btn_wip": "WIP",
-    "btn_send": "Enviar",
-    "gabarito_title": "Modelo de Entrega"
+    "gabarito_title": "Modelo de Entrega",
+    "stock_per_work": "Inventario de la Estación"
   },
   "results": {
     "header_title": "Informe de Rendimiento Industrial",
@@ -75,9 +73,7 @@
       "units_axis": "Unidades",
       "finished_products": "Productos Terminados",
       "wip_items": "Artículos en el WIP",
-      "wip_value_legend": "Valor Financiero Parado",
-      "bench_cost": "Costo en Mesa:",
-      "wip_cost": "Costo del WIP Total:"
+      "wip_value_legend": "Valor Financiero Parado"
     },
     "ranking": {
       "title": "Benchmarking Global (Top Salas)",

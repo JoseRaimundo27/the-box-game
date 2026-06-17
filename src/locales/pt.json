@@ -48,12 +48,8 @@
     "progress": "Progresso:",
     "btn_force_end": "📊 Encerrar Turno (Estatísticas)",
     "station_label": "Estação",
-    "btn_stock": "Estoque",
-    "btn_wip": "WIP",
-    "btn_send": "Enviar",
     "gabarito_title": "Gabarito de Entrega",
-    "bench_cost": "Custo na Mesa:",
-    "wip_cost": "Custo do WIP Total:"
+    "stock_per_work": "Estoque da Estação"
   },
   "results": {
     "header_title": "Relatório de Performance Industrial",

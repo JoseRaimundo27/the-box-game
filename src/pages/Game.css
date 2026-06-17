@@ -50,6 +50,7 @@
   flex: 1; /* Distribui o espaço igualmente */
   min-width: 0; /* Permite que o flex-item encolha conforme necessário */
   max-width: 190px;
+  min-height: 400px;
   background: white;
   border: 2px solid #dfe6e9;
   border-radius: 8px;
