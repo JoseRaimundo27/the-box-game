@@ -39,6 +39,16 @@ Statistics like in the ppt
 Waste can be a amount of clicks of the players
 
 
+18/06:
+Station A começa round 2 e Station B começa round 3 ( era para eles começarem sincronizados no Round 2)
+Implement the Waste KPI (by wastes clicks ?!)
+Organizar o teste
+The translation 
+Do a Action Log
+Salvar o history of the game?! Numero de jogos, jogadores, round, players, results, quantas vezes jogou o game
+Colocar mais x-asis elements no Curva S de Producción (Acumulado) para ver a red-line
+MOstrar o "cost structure". Deixar claro os custos
+
 
 
 

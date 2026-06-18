@@ -386,6 +386,22 @@ const Game = () => {
                 </div>
 
                 <div className="station-controls">
+
+                    {letter !== "A" && (
+                    <button
+                      disabled={
+                        !isMe ||
+                        work.wipItems > 0 ||
+                        prod.wips[specs[`station_${letter}`].prevWip] <= 0
+                      }
+                      onClick={() => handleAction("WIP")}
+                      title={t("game.btn_wip")}
+                      style={{ fontSize: "1.3rem", padding: "6px 12px" }}
+                    >
+                      WIP
+                    </button>
+                  )}
+
                   <button
                     disabled={
                       !isMe ||
@@ -399,21 +415,6 @@ const Game = () => {
                   >
                     ⬆️
                   </button>
-
-                  {letter !== "A" && (
-                    <button
-                      disabled={
-                        !isMe ||
-                        work.wipItems > 0 ||
-                        prod.wips[specs[`station_${letter}`].prevWip] <= 0
-                      }
-                      onClick={() => handleAction("WIP")}
-                      title={t("game.btn_wip")}
-                      style={{ fontSize: "1.3rem", padding: "6px 12px" }}
-                    >
-                      ⬇️
-                    </button>
-                  )}
 
                   <button
                     className="btn-send"
