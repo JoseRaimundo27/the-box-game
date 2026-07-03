@@ -166,29 +166,54 @@ const Game = () => {
     }
   }, [roomData, currentRoom]);
 
-  // Efeito de Encerramento por Meta ou por Tempo (Agora lê dinamicamente o round ativo)
   useEffect(() => {
-    const currentRnd = roomData?.metadata?.currentRound || 1;
-    const currentFinishedTotal =
-      roomData?.rounds?.[currentRnd]?.production?.finished_total || 0;
+    if (roomData?.metadata?.currentRound) {
+      localStorage.setItem("lastPlayedRound", String(roomData.metadata.currentRound));
+    }
+  }, [roomData?.metadata?.currentRound]);
 
-    // 1. Checa se bateu a meta de produção configurada para o Round atual
-    if (currentFinishedTotal >= META_PRODUCAO) {
+  // Efeito de Encerramento Centralizado por Meta ou por Tempo
+  useEffect(() => {
+    if (!roomData || !currentRoom) return;
+
+    const currentRnd = roomData.metadata?.currentRound || 1;
+    const currentRoundData = roomData.rounds?.[currentRnd];
+    const currentFinishedTotal = currentRoundData?.production?.finished_total || 0;
+    
+    // Verifica se o encerramento do round já foi decretado no banco de dados
+    const isOver = currentRoundData?.isOver === true;
+
+    // Se o round acabou oficialmente, envia o jogador para a tela de resultados
+    if (isOver) {
       navigate("/results");
       return;
     }
 
+    // Função interna para salvar o término oficial do round no Firebase
+    const finalizeRound = () => {
+      const roundRef = ref(db, `rooms/${currentRoom}/rounds/${currentRnd}`);
+      import("firebase/database").then(({ update }) => {
+        update(roundRef, { isOver: true }); // Alerta global de fim de round
+      });
+    };
+
+    // 1. Checa se bateu a meta de produção configurada para o Round atual
+    if (currentFinishedTotal >= META_PRODUCAO) {
+      finalizeRound();
+      return;
+    }
+
     // 2. Lógica do Timer (Contagem Regressiva)
-    const limit = roomData?.config?.timeLimit || 0;
+    const limit = roomData.config?.timeLimit || 0;
     if (limit > 0) {
-      const start = roomData?.metadata?.startedAt || localStartTime;
+      const start = roomData.metadata?.startedAt || localStartTime;
       const interval = setInterval(() => {
         const elapsed = Math.floor((Date.now() - start) / 1000);
         const remaining = limit - elapsed;
 
         if (remaining <= 0) {
           clearInterval(interval);
-          navigate("/results"); // Força o fim quando o tempo zera!
+          finalizeRound(); // Tempo estourou, finaliza para todos simultaneamente
         } else {
           setTimeLeft(remaining);
         }
@@ -197,7 +222,7 @@ const Game = () => {
     } else {
       setTimeLeft(null); // Jogo de tempo infinito
     }
-  }, [roomData, META_PRODUCAO, navigate, localStartTime]);
+  }, [roomData, META_PRODUCAO, navigate, localStartTime, currentRoom]);
 
   if (!roomData) return <div className="loading">{t("game.loading")}</div>;
 

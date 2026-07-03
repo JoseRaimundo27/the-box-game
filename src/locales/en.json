@@ -86,11 +86,15 @@
     "comparative": {
     "s_curve_title": "Compared Production S-Curves",
     "wip_cost_title": "Compared Work-In-Process (WIP) Financial Cost",
-    "time_axis": "Elapsed Time (seconds)"
+    "time_axis": "Elapsed Time (seconds)",
+    "production_rate": "Goal Completion Percentage",
+    "cycle_time": "Total Cycle Time / Lead Time",
+    "final_wip": "Work-in-Process Inventory Volume (Final WIP)"
   },
     "actions": {
       "btn_back_factory": "Return to Factory",
-      "btn_new_game": "New Match"
+      "btn_new_game": "New Match",
+      "finish_simulation": "End Simulation"
     }
   }
 }

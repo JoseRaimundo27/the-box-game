@@ -48,6 +48,7 @@ const Results = () => {
   // NOVOS ESTADOS PARA O SISTEMA DE ROUNDS
   const [currentRound, setCurrentRound] = useState(1);
   const [evolutionData, setEvolutionData] = useState([]); // Guarda a evolução da sala nos 3 rounds
+  const [isRoundOver, setIsRoundOver] = useState(false); //para round
 
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -67,9 +68,21 @@ const Results = () => {
       const roomID = currentRoom || "sala_01";
       const localRoom = allRooms[roomID];
 
+      if (localRoom?.metadata?.status === "PLAYING") {
+        navigate('/game');
+        return; 
+      }
+      if (localRoom?.metadata?.status === "FINISHED") {
+        navigate('/');
+        return;
+      }
+
       // Captura o round ativo da sala
       const activeRound = localRoom?.metadata?.currentRound || 1;
       setCurrentRound(activeRound);
+
+      const roundAcabou = localRoom?.rounds?.[activeRound]?.isOver === true;
+      setIsRoundOver(roundAcabou);
 
       // ==========================================
       // PROCESSAMENTO DE EVOLUÇÃO DOS ROUNDS (Histórico da Sala Atual)
@@ -289,7 +302,12 @@ const Results = () => {
     if (currentRound < 3) {
       const roomID = currentRoom || "sala_01";
       const metaRef = ref(db, `rooms/${roomID}/metadata`);
-      update(metaRef, { currentRound: currentRound + 1 }).then(() => {
+      
+      // Atualiza o número do round E reseta a contagem de tempo inicial do novo round
+      update(metaRef, { 
+        currentRound: currentRound + 1,
+        startedAt: Date.now() // Zera o relógio global para o Round 2 ou 3
+      }).then(() => {
         navigate("/game");
       });
     } else {
@@ -659,22 +677,43 @@ const Results = () => {
         {currentRound < 3 ? (
           <button
             className="restart-btn"
-            style={{ backgroundColor: "#2ecc71", fontSize: "1.1rem" }}
+            style={{ 
+              backgroundColor: isRoundOver ? "#2ecc71" : "#bdc3c7", 
+              fontSize: "1.1rem",
+              cursor: isRoundOver ? "pointer" : "not-allowed"
+            }}
             onClick={handleNextRound}
+            disabled={!isRoundOver}
           >
-            {t(
-              "results.actions.next_round",
-              `Iniciar Round ${currentRound + 1}`,
-            )}{" "}
-            ➔
+            {isRoundOver 
+              ? t("results.actions.next_round", `Iniciar Round ${currentRound + 1}`) + " ➔"
+              : t("results.actions.waiting", "Aguardando fim do Round...")}
           </button>
         ) : (
           <button
             className="restart-btn"
-            style={{ backgroundColor: "#e74c3c", fontSize: "1.1rem" }}
+            style={{ 
+              backgroundColor: isRoundOver ? "#e74c3c" : "#bdc3c7", 
+              fontSize: "1.1rem",
+              cursor: isRoundOver ? "pointer" : "not-allowed"
+            }}
             onClick={handleNextRound}
+            disabled={!isRoundOver}
           >
-            {t("results.actions.finish_simulation", "Finalizar Simulação")}
+            {isRoundOver
+              ? t("results.actions.finish_simulation", "Finalizar Simulação")
+              : t("results.actions.waiting", "Aguardando fim do Round...")}
+          </button>
+        )}
+
+        {/* 🛠️ BOTÃO DE ESCAPE: Se o round está acontecendo, permite ir e voltar livremente sem loops */}
+        {!isRoundOver && (
+          <button
+            className="restart-btn"
+            style={{ backgroundColor: "#3498db", fontSize: "1.1rem" }}
+            onClick={() => navigate("/game")}
+          >
+            Voltar para a Fábrica
           </button>
         )}
 

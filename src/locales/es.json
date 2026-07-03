@@ -85,11 +85,15 @@
     "comparative": {
     "s_curve_title": "Curvas S de Producción Comparadas",
     "wip_cost_title": "Comparación del Costo de Inventario Parado (WIP)",
-    "time_axis": "Tiempo Transcurrido (segundos)"
+    "time_axis": "Tiempo Transcurrido (segundos)",
+    "production_rate": "Porcentaje de Cumplimiento de la Meta",
+    "cycle_time": "Tiempo de Ciclo Total / Lead Time",
+    "final_wip": "Volumen de Inventario en Proceso (WIP Final)"
   },
     "actions": {
       "btn_back_factory": "Volver a la Fábrica",
-      "btn_new_game": "Nueva Partida"
+      "btn_new_game": "Nueva Partida",
+      "finish_simulation": "Finalizar Simulación"
     }
   }
 }
