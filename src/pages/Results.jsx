@@ -88,7 +88,8 @@ const Results = () => {
       // PROCESSAMENTO DE EVOLUÇÃO DOS ROUNDS (Histórico da Sala Atual)
       // ==========================================
       const evData = [];
-      for (let i = 1; i <= 3; i++) {
+      // O Loop agora começa no 2 (ignora o Round 1 de Teste) e vai até o 4
+      for (let i = 2; i <= 4; i++) {
         const roundHistory = localRoom?.rounds?.[i]?.history;
         if (roundHistory) {
           const histArr = Object.entries(roundHistory)
@@ -102,8 +103,7 @@ const Results = () => {
             const start = histArr[0].timestamp;
             const last = histArr[histArr.length - 1].timestamp;
             const leadTime = Math.max(0, (last - start) / 1000);
-            const avgWip =
-              histArr.reduce((acc, h) => acc + h.wip, 0) / histArr.length;
+            const avgWip = histArr.reduce((acc, h) => acc + h.wip, 0) / histArr.length;
 
             evData.push({
               roundName: `Round ${i}`,
@@ -116,7 +116,7 @@ const Results = () => {
       setEvolutionData(evData);
 
       // ==========================================
-      // PROCESSAMENTO DE DADOS LOCAIS DO ROUND ATUAL
+      // PROCESSAMENTO DE DADOS LOCAIS DO ROUND ATUAL (Mantenha o seu atual intacto)
       // ==========================================
       const currentHistoryObj = localRoom?.rounds?.[activeRound]?.history;
 
@@ -146,27 +146,16 @@ const Results = () => {
           const sumWip = historyArray.reduce((acc, item) => acc + item.wip, 0);
           const avgWip = sumWip / historyArray.length;
 
-          const finalFinancialValue =
-            historyArray[historyArray.length - 1].wipPriceValue;
+          const finalFinancialValue = historyArray[historyArray.length - 1].wipPriceValue;
           const lastCount = historyArray[historyArray.length - 1].count;
-          const percentage = (lastCount / 100) * 100;
+          // Puxa a meta dinâmica do round atual
+          const currentGoal = localRoom?.config?.rounds?.[activeRound]?.productionGoal || 100;
+          const percentage = (lastCount / currentGoal) * 100;
           const finalWip = historyArray[historyArray.length - 1].wip;
 
-          let formattedFinancial = finalFinancialValue.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          });
-          if (i18n.language === "en")
-            formattedFinancial = finalFinancialValue.toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            });
-          else if (i18n.language === "es")
-            formattedFinancial = finalFinancialValue.toLocaleString("es-CL", {
-              style: "currency",
-              currency: "CLP",
-              minimumFractionDigits: 0,
-            });
+          let formattedFinancial = finalFinancialValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+          if (i18n.language === "en") formattedFinancial = finalFinancialValue.toLocaleString("en-US", { style: "currency", currency: "USD" });
+          else if (i18n.language === "es") formattedFinancial = finalFinancialValue.toLocaleString("es-CL", { style: "currency", currency: "CLP", minimumFractionDigits: 0 });
 
           setKpis({
             totalTime: Number(totalTime).toFixed(1),
@@ -176,33 +165,32 @@ const Results = () => {
             finalWip: finalWip,
           });
         } else {
-          setData([]); // Reseta se não houver dados no round
+          setData([]); 
         }
       }
 
-     // ==========================================
-      // PROCESSAMENTO COMPARATIVO GLOBAL (Todas as Salas & Todos os Rounds)
+      // ==========================================
+      // PROCESSAMENTO COMPARATIVO GLOBAL (Todas as Salas & Rounds 2, 3 e 4)
       // ==========================================
       const roomsListData = [];
       const processedRoomsHistories = {};
       
-      // Estrutura base para o gráfico unificado de 3 Rounds
+      // Nova estrutura base ignorando o Round 1
       const multiRoundData = [
-        { roundName: "Round 1" },
         { roundName: "Round 2" },
-        { roundName: "Round 3" }
+        { roundName: "Round 3" },
+        { roundName: "Round 4" }
       ];
 
       const allRoomIds = Object.keys(allRooms);
-      setActiveRooms(allRoomIds); // Garante que todas as salas entrem na legenda
+      setActiveRooms(allRoomIds); 
 
       Object.entries(allRooms).forEach(([id, roomVal]) => {
-        const currentGoal = roomVal?.config?.productionGoal || 100;
-
-        // 1. Loop para alimentar o gráfico histórico dos 3 Rounds
-        for (let rNum = 1; rNum <= 3; rNum++) {
+        // 1. Loop ignorando o Round 1 de Teste
+        for (let rNum = 2; rNum <= 4; rNum++) {
           const rHistory = roomVal?.rounds?.[rNum]?.history;
           const rProduction = roomVal?.rounds?.[rNum]?.production;
+          const goal = roomVal?.config?.rounds?.[rNum]?.productionGoal || 100;
 
           if (rHistory) {
             const hist = Object.entries(rHistory)
@@ -220,16 +208,16 @@ const Results = () => {
               const finalTime = Math.max(0, (lastEntry.timestamp - start) / 1000);
               const finishedTotal = rProduction?.finished_total || 0;
 
-              // Injeta as métricas desta sala específica dentro do nó do Round correspondente
-              multiRoundData[rNum - 1][`${id}_completionRate`] = Number(((finishedTotal / currentGoal) * 100).toFixed(0));
-              multiRoundData[rNum - 1][`${id}_time`] = Number(finalTime.toFixed(1));
-              multiRoundData[rNum - 1][`${id}_finalWip`] = Number(lastEntry.wip);
-              multiRoundData[rNum - 1][`${id}_financialImpact`] = Number(lastEntry.wipPriceValue);
+              // [rNum - 2] garante que o Round 2 caia no index 0, Round 3 no 1, e Round 4 no 2
+              multiRoundData[rNum - 2][`${id}_completionRate`] = Number(((finishedTotal / goal) * 100).toFixed(0));
+              multiRoundData[rNum - 2][`${id}_time`] = Number(finalTime.toFixed(1));
+              multiRoundData[rNum - 2][`${id}_finalWip`] = Number(lastEntry.wip);
+              multiRoundData[rNum - 2][`${id}_financialImpact`] = Number(lastEntry.wipPriceValue);
             }
           }
         }
 
-        // 2. Coleta isolada do ROUND ATUAL (Apenas para a Tabela de Pódio e a Curva S de tempo real)
+        // 2. Coleta isolada do ROUND ATUAL (Mantenha o seu atual)
         const currentRoundHistory = roomVal?.rounds?.[activeRound]?.history;
         const currentRoundProduction = roomVal?.rounds?.[activeRound]?.production;
 
@@ -260,7 +248,6 @@ const Results = () => {
         }
       });
 
-      // Salva o estado dos rounds cruzados
       setComparativeRoundsData(multiRoundData);
 
       // Ordena o ranking do pódio do round atual
@@ -299,14 +286,13 @@ const Results = () => {
 
   // FUNÇÃO PARA AVANÇAR DE ROUND
   const handleNextRound = () => {
-    if (currentRound < 3) {
+    if (currentRound < 4) {
       const roomID = currentRoom || "sala_01";
       const metaRef = ref(db, `rooms/${roomID}/metadata`);
       
-      // Atualiza o número do round E reseta a contagem de tempo inicial do novo round
       update(metaRef, { 
         currentRound: currentRound + 1,
-        startedAt: Date.now() // Zera o relógio global para o Round 2 ou 3
+        startedAt: Date.now() 
       }).then(() => {
         navigate("/game");
       });
@@ -319,11 +305,9 @@ const Results = () => {
     <div className="results-container">
       <header className="results-header">
         <h1>
-          {t("results.header_title")} (Round {currentRound})
+          {t("results.header_title")} {currentRound === 1 ? "(Round de Teste)" : `(Round ${currentRound})`}
         </h1>
-        <p>
-          {t("results.room_label")} {currentRoom?.toUpperCase()}
-        </p>
+        <p>{t("results.room_label")} {currentRoom?.toUpperCase()}</p>
       </header>
 
       {/* SEÇÃO DE INDICADORES LOCAIS */}
@@ -365,7 +349,7 @@ const Results = () => {
           <h2>
             {t(
               "results.evolution_title",
-              "🚀 Evolução da Sua Fábrica (Turno a Turno)",
+              "🚀 Evolução da Sua Fábrica (Turno a Turno)"
             )}
           </h2>
           <div
@@ -383,7 +367,7 @@ const Results = () => {
               >
                 {t(
                   "results.evolution.lead_time",
-                  "Evolução do Lead Time (segundos)",
+                  "Evolução do Lead Time (segundos)"
                 )}
               </h3>
               <div style={{ width: "100%", height: 250 }}>
@@ -455,15 +439,12 @@ const Results = () => {
                   dot={false}
                 />
 
-                {/* ==========================================================
-              LINHA VERTICAL VERMELHA (Delimitador do Fim do Jogo)
-             ========================================================== */}
                 {data.length > 0 && (
                   <ReferenceLine
                     x={data[data.length - 1].timeLabel}
                     stroke="#e74c3c"
                     strokeWidth={2}
-                    strokeDasharray="4 4" // Deixa a linha pontilhada/tracejada para estilo "Dead Line"
+                    strokeDasharray="4 4"
                     label={{
                       value: "FIM",
                       position: "top",
@@ -479,190 +460,191 @@ const Results = () => {
         </div>
       </div>
 
-      {/* SEÇÃO DE BENCHMARKING GLOBAL (Round Atual) */}
-      <section className="ranking-section">
-        <h2>
-          {t("results.ranking.title")} (Round {currentRound})
-        </h2>
+      {/* 🛑 A MÁGICA DO PASSO 3: BENCHMARKING GLOBAL ESCONDIDO 🛑 */}
+      {currentRound === 4 && isRoundOver && (
+        <section className="ranking-section">
+          <h2>
+            {t("results.ranking.title")} (Fim da Simulação)
+          </h2>
 
-        {/* SEÇÃO DE BENCHMARKING GLOBAL (Gráficos Comparativos Multissalas) */}
-        <div
-          className="charts-section comparative-charts"
-          style={{
-            marginTop: "20px",
-            marginBottom: "30px",
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
-            gap: "20px",
-          }}
-        >
-          {/* 1. CURVA S ORIGINAL */}
-          <div className="chart-box">
-            <h3
-              style={{
-                fontSize: "1.2rem",
-                marginBottom: "15px",
-                color: "#2c3e50",
-                fontWeight: "bold",
-              }}
-            >
-              {t("results.comparative.s_curve_title")}
-            </h3>
-            <div style={{ width: "100%", height: 300 }}>
-              <ResponsiveContainer>
-                <LineChart data={comparativeData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="timeLabel" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  {activeRooms.map((rId, idx) => (
-                    <Line
-                      key={rId}
-                      type="monotone"
-                      dataKey={`${rId}_count`}
-                      name={rId.replace("_", " ").toUpperCase()}
-                      stroke={getRoomColor(rId, idx)}
-                      strokeWidth={rId === (currentRoom || "sala_01") ? 4 : 1.5}
-                      dot={false}
-                    />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* 2. COMPARATIVO DE MATURAÇÃO DA META (% DE PRODUÇÃO) */}
-          <div className="chart-box">
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#2c3e50', fontWeight: 'bold' }}>
-              🎯 {t('results.comparative.production_rate', 'Porcentagem de Conclusão da Meta')}
-            </h3>
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <BarChart data={comparativeRoundsData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="roundName" />
-                  <YAxis unit="%" domain={[0, 100]} />
-                  <Tooltip formatter={(value) => `${value}%`} />
-                  <Legend verticalAlign="bottom" height={36} />
-                  {activeRooms.map((rId, idx) => (
-                    <Bar 
-                      key={rId} 
-                      dataKey={`${rId}_completionRate`} 
-                      name={rId.replace('_', ' ').toUpperCase()} 
-                      fill={getRoomColor(rId, idx)} 
-                    />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* 3. COMPARATIVO DE CYCLE TIME (LEAD TIME FINAL) */}
-          <div className="chart-box">
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#2c3e50', fontWeight: 'bold' }}>
-              ⏱️ {t('results.comparative.cycle_time', 'Tempo de Ciclo Total / Lead Time')}
-            </h3>
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <BarChart data={comparativeRoundsData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="roundName" />
-                  <YAxis unit="s" />
-                  <Tooltip formatter={(value) => `${value}s`} />
-                  <Legend verticalAlign="bottom" height={36} />
-                  {activeRooms.map((rId, idx) => (
-                    <Bar 
-                      key={rId} 
-                      dataKey={`${rId}_time`} 
-                      name={rId.replace('_', ' ').toUpperCase()} 
-                      fill={getRoomColor(rId, idx)} 
-                    />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* 4. COMPARATIVO DE WIP ACUMULADO NO FINAL */}
-          <div className="chart-box">
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#2c3e50', fontWeight: 'bold' }}>
-              📦 {t('results.comparative.final_wip', 'Volume de Estoque em Processo (WIP Final)')}
-            </h3>
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <BarChart data={comparativeRoundsData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="roundName" />
-                  <YAxis unit=" un" />
-                  <Tooltip formatter={(value) => `${value} un`} />
-                  <Legend verticalAlign="bottom" height={36} />
-                  {activeRooms.map((rId, idx) => (
-                    <Bar 
-                      key={rId} 
-                      dataKey={`${rId}_finalWip`} 
-                      name={rId.replace('_', ' ').toUpperCase()} 
-                      fill={getRoomColor(rId, idx)} 
-                    />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* 5. COMPARATIVO DE INFLAÇÃO/CUSTO FINANCEIRO DO WIP */}
-          <div className="chart-box">
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#2c3e50', fontWeight: 'bold' }}>
-              💰 {t('results.comparative.wip_cost_title', 'Custo Financeiro Retido no WIP')}
-            </h3>
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <BarChart data={comparativeRoundsData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="roundName" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => value.toLocaleString(i18n.language === 'en' ? 'en-US' : 'pt-BR', { style: 'currency', currency: i18n.language === 'en' ? 'USD' : 'BRL' })} />
-                  <Legend verticalAlign="bottom" height={36} />
-                  {activeRooms.map((rId, idx) => (
-                    <Bar 
-                      key={rId} 
-                      dataKey={`${rId}_financialImpact`} 
-                      name={rId.replace('_', ' ').toUpperCase()} 
-                      fill={getRoomColor(rId, idx)} 
-                    />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
-        <table className="ranking-table">
-          <thead>
-            <tr>
-              <th>{t("results.ranking.th_position")}</th>
-              <th>{t("results.ranking.th_room")}</th>
-              <th>{t("results.ranking.goal")}</th>
-              <th>{t("results.ranking.th_lead_time")}</th>
-              <th>{t("results.ranking.avarage_wip")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {globalRank.map((room, index) => (
-              <tr
-                key={room.id}
-                className={room.id === currentRoom ? "my-room-row" : ""}
+          <div
+            className="charts-section comparative-charts"
+            style={{
+              marginTop: "20px",
+              marginBottom: "30px",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))",
+              gap: "20px",
+            }}
+          >
+            {/* 1. CURVA S ORIGINAL */}
+            <div className="chart-box">
+              <h3
+                style={{
+                  fontSize: "1.2rem",
+                  marginBottom: "15px",
+                  color: "#2c3e50",
+                  fontWeight: "bold",
+                }}
               >
-                <td>{index + 1}º</td>
-                <td>{room.id.replace("_", " ").toUpperCase()}</td>
-                <td>{room.finished} / 100</td>
-                <td>{room.time}s</td>
-                <td>{room.avgWip} un</td>
+                {t("results.comparative.s_curve_title")}
+              </h3>
+              <div style={{ width: "100%", height: 300 }}>
+                <ResponsiveContainer>
+                  <LineChart data={comparativeData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="timeLabel" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    {activeRooms.map((rId, idx) => (
+                      <Line
+                        key={rId}
+                        type="monotone"
+                        dataKey={`${rId}_count`}
+                        name={rId.replace("_", " ").toUpperCase()}
+                        stroke={getRoomColor(rId, idx)}
+                        strokeWidth={rId === (currentRoom || "sala_01") ? 4 : 1.5}
+                        dot={false}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* 2. COMPARATIVO DE MATURAÇÃO DA META */}
+            <div className="chart-box">
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#2c3e50', fontWeight: 'bold' }}>
+                🎯 {t('results.comparative.production_rate', 'Porcentagem de Conclusão da Meta')}
+              </h3>
+              <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                  <BarChart data={comparativeRoundsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="roundName" />
+                    <YAxis unit="%" domain={[0, 100]} />
+                    <Tooltip formatter={(value) => `${value}%`} />
+                    <Legend verticalAlign="bottom" height={36} />
+                    {activeRooms.map((rId, idx) => (
+                      <Bar 
+                        key={rId} 
+                        dataKey={`${rId}_completionRate`} 
+                        name={rId.replace('_', ' ').toUpperCase()} 
+                        fill={getRoomColor(rId, idx)} 
+                      />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* 3. COMPARATIVO DE CYCLE TIME */}
+            <div className="chart-box">
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#2c3e50', fontWeight: 'bold' }}>
+                ⏱️ {t('results.comparative.cycle_time', 'Tempo de Ciclo Total / Lead Time')}
+              </h3>
+              <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                  <BarChart data={comparativeRoundsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="roundName" />
+                    <YAxis unit="s" />
+                    <Tooltip formatter={(value) => `${value}s`} />
+                    <Legend verticalAlign="bottom" height={36} />
+                    {activeRooms.map((rId, idx) => (
+                      <Bar 
+                        key={rId} 
+                        dataKey={`${rId}_time`} 
+                        name={rId.replace('_', ' ').toUpperCase()} 
+                        fill={getRoomColor(rId, idx)} 
+                      />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* 4. COMPARATIVO DE WIP ACUMULADO */}
+            <div className="chart-box">
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#2c3e50', fontWeight: 'bold' }}>
+                📦 {t('results.comparative.final_wip', 'Volume de Estoque em Processo (WIP Final)')}
+              </h3>
+              <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                  <BarChart data={comparativeRoundsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="roundName" />
+                    <YAxis unit=" un" />
+                    <Tooltip formatter={(value) => `${value} un`} />
+                    <Legend verticalAlign="bottom" height={36} />
+                    {activeRooms.map((rId, idx) => (
+                      <Bar 
+                        key={rId} 
+                        dataKey={`${rId}_finalWip`} 
+                        name={rId.replace('_', ' ').toUpperCase()} 
+                        fill={getRoomColor(rId, idx)} 
+                      />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* 5. COMPARATIVO DE INFLAÇÃO/CUSTO FINANCEIRO */}
+            <div className="chart-box">
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#2c3e50', fontWeight: 'bold' }}>
+                💰 {t('results.comparative.wip_cost_title', 'Custo Financeiro Retido no WIP')}
+              </h3>
+              <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                  <BarChart data={comparativeRoundsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="roundName" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => value.toLocaleString(i18n.language === 'en' ? 'en-US' : 'pt-BR', { style: 'currency', currency: i18n.language === 'en' ? 'USD' : 'BRL' })} />
+                    <Legend verticalAlign="bottom" height={36} />
+                    {activeRooms.map((rId, idx) => (
+                      <Bar 
+                        key={rId} 
+                        dataKey={`${rId}_financialImpact`} 
+                        name={rId.replace('_', ' ').toUpperCase()} 
+                        fill={getRoomColor(rId, idx)} 
+                      />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          <table className="ranking-table">
+            <thead>
+              <tr>
+                <th>{t("results.ranking.th_position")}</th>
+                <th>{t("results.ranking.th_room")}</th>
+                <th>{t("results.ranking.goal")}</th>
+                <th>{t("results.ranking.th_lead_time")}</th>
+                <th>{t("results.ranking.avarage_wip")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+            </thead>
+            <tbody>
+              {globalRank.map((room, index) => (
+                <tr
+                  key={room.id}
+                  className={room.id === currentRoom ? "my-room-row" : ""}
+                >
+                  <td>{index + 1}º</td>
+                  <td>{room.id.replace("_", " ").toUpperCase()}</td>
+                  <td>{room.finished} / 100</td>
+                  <td>{room.time}s</td>
+                  <td>{room.avgWip} un</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       {/* BOTÕES DE AÇÃO: AVANÇAR OU FINALIZAR */}
       <div
@@ -674,7 +656,7 @@ const Results = () => {
           justifyContent: "center",
         }}
       >
-        {currentRound < 3 ? (
+        {currentRound < 4 ? (
           <button
             className="restart-btn"
             style={{ 
@@ -706,7 +688,6 @@ const Results = () => {
           </button>
         )}
 
-        {/* 🛠️ BOTÃO DE ESCAPE: Se o round está acontecendo, permite ir e voltar livremente sem loops */}
         {!isRoundOver && (
           <button
             className="restart-btn"

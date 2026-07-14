@@ -46,7 +46,6 @@
   "game": {
     "loading": "Carregando...",
     "progress": "Progresso:",
-    "btn_force_end": "📊 Encerrar Turno (Estatísticas)",
     "station_label": "Estação",
     "gabarito_title": "Gabarito de Entrega",
     "stock_per_work": "Estoque da Estação"

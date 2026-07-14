@@ -23,10 +23,12 @@ const Game = () => {
     E: "purple-E",
   };
 
-  // 1. CARREGAMENTO DINÂMICO DAS CONFIGURAÇÕES DA SALA (com fallback para valores padrão)
-  const config = roomData?.config || {
+  const currentRound = roomData?.metadata?.currentRound || 1;
+
+  // ✨ 2. CARREGAMENTO DINÂMICO DAS CONFIGURAÇÕES DA ABA DESTE ROUND (com fallback para 13123)
+  const config = roomData?.config?.rounds?.[currentRound] || {
     prices: { A: 1, B: 2, C: 3, D: 4, E: 5 },
-    stockNeeded: { A: 1, B: 3, C: 1, D: 2, E: 2 },
+    stockNeeded: { A: 1, B: 3, C: 1, D: 2, E: 2 }, // Atualizado para o padrão 13123
     productionGoal: 100,
     timeLimit: 300,
   };
@@ -172,16 +174,18 @@ const Game = () => {
     }
   }, [roomData?.metadata?.currentRound]);
 
+  // Efeito de Encerramento Centralizado por Meta ou por Tempo (Lendo config do Round Atual)
   // Efeito de Encerramento Centralizado por Meta ou por Tempo
   useEffect(() => {
     if (!roomData || !currentRoom) return;
 
-    const currentRnd = roomData.metadata?.currentRound || 1;
-    const currentRoundData = roomData.rounds?.[currentRnd];
-    const currentFinishedTotal = currentRoundData?.production?.finished_total || 0;
+    const currentRoundData = roomData.rounds?.[currentRound];
+    if (!currentRoundData) return;
+
+    const currentFinishedTotal = currentRoundData.production?.finished_total || 0;
     
     // Verifica se o encerramento do round já foi decretado no banco de dados
-    const isOver = currentRoundData?.isOver === true;
+    const isOver = currentRoundData.isOver === true;
 
     // Se o round acabou oficialmente, envia o jogador para a tela de resultados
     if (isOver) {
@@ -191,20 +195,20 @@ const Game = () => {
 
     // Função interna para salvar o término oficial do round no Firebase
     const finalizeRound = () => {
-      const roundRef = ref(db, `rooms/${currentRoom}/rounds/${currentRnd}`);
+      const roundRef = ref(db, `rooms/${currentRoom}/rounds/${currentRound}`);
       import("firebase/database").then(({ update }) => {
         update(roundRef, { isOver: true }); // Alerta global de fim de round
       });
     };
 
-    // 1. Checa se bateu a meta de produção configurada para o Round atual
+    // 1. Checa se bateu a meta de produção
     if (currentFinishedTotal >= META_PRODUCAO) {
       finalizeRound();
       return;
     }
 
     // 2. Lógica do Timer (Contagem Regressiva)
-    const limit = roomData.config?.timeLimit || 0;
+    const limit = config.timeLimit || 0;
     if (limit > 0) {
       const start = roomData.metadata?.startedAt || localStartTime;
       const interval = setInterval(() => {
@@ -222,16 +226,14 @@ const Game = () => {
     } else {
       setTimeLeft(null); // Jogo de tempo infinito
     }
-  }, [roomData, META_PRODUCAO, navigate, localStartTime, currentRoom]);
+  }, [roomData, currentRoom, currentRound, META_PRODUCAO, config.timeLimit, localStartTime, navigate]);
 
-  if (!roomData) return <div className="loading">{t("game.loading")}</div>;
+ if (!roomData) return <div className="loading">{t("game.loading")}</div>;
 
-  // CAPTURA O ROUND ATUAL E OS DADOS DE PRODUÇÃO ISOLADOS DESSE ROUND
-  const currentRound = roomData.metadata?.currentRound || 1;
+  // CAPTURA OS DADOS DE PRODUÇÃO ISOLADOS DESSE ROUND
   const prod = roomData.rounds?.[currentRound]?.production;
 
-  if (!prod)
-    return <div className="loading">Carregando Round {currentRound}...</div>;
+  if (!prod) return <div className="loading">Carregando Round {currentRound}...</div>;
 
   // CÁLCULO DO VALOR FINANCEIRO REAL TOTAL DO WIP FLUTUANTE
   const totalWipValue =
@@ -351,20 +353,7 @@ const Game = () => {
             </span>
           )}
         </div>
-        <button
-          onClick={() => navigate("/results")}
-          style={{
-            backgroundColor: "#f39c12",
-            color: "white",
-            border: "none",
-            padding: "8px 15px",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          {t("game.btn_force_end")}
-        </button>
+        
       </div>
 
       <div className="factory-floor">

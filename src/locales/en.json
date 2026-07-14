@@ -46,7 +46,6 @@
   "game": {
     "loading": "Loading...",
     "progress": "Progress:",
-    "btn_force_end": "📊 End Shift (Statistics)",
     "station_label": "Station",
     "gabarito_title": "Delivery Template",
     "stock_per_work": "Station Inventory"

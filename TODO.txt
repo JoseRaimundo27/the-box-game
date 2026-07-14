@@ -49,6 +49,21 @@ Salvar o history of the game?! Numero de jogos, jogadores, round, players, resul
 Colocar mais x-asis elements no Curva S de Producción (Acumulado) para ver a red-line
 MOstrar o "cost structure". Deixar claro os custos
 
+03/07:
+Salvar os nomes dos jogadores
+Save the DATA per round
+Salvar data de line road. KPIS. TIME. DURATION. SALVAR INSTRUCTIONS.
+Salvar o data dos jogos. DOnwload no excel os dados dos jogos. SAVE AS MUCH AS POSSIBLE
+4 ROUNDS? O PRIMEIRO PARA ENTENDER O JOGO -> TEST ROUND -> NAO CARREGAR DADOS (V)
+r0 13123 (default) (V)
+r1 13123 (V)
+r2 13123 (V)
+r3 22222 (V)
+MOSTRAR THE GLOBAL STATISTICS AFTER DO ROUND 3; (V)
+Apenas os KPI's PER ROUND depois dos rounds 1 e rounds 2; (V)
+NÃO PRECISA DO BOTAO "TERMINAR TURNO" (V)
+The mistakes of the users -> KPI.
+preparation after de round 0. (V)
 
 
 

@@ -13,18 +13,24 @@ const Lobby = () => {
   const navigate = useNavigate();
   const { t } = useTranslation(); 
 
-  // Controle de Estado do Modal de Configuração
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState('');
+  const [activeTab, setActiveTab] = useState(1); // Controla qual round estamos editando no modal
   
-  // Estado local do formulário de configurações
-  const [configForm, setConfigForm] = useState({
+  const defaultRoundConfig = {
     prices: { A: 1, B: 2, C: 3, D: 4, E: 5 },
-    stockNeeded: { A: 1, B: 3, C: 1, D: 2, E: 2 },
+    stockNeeded: { A: 1, B: 3, C: 1, D: 2, E: 2}, // voltando para 13122
     productionGoal: 100,
     timeLimit: 300 // 5 minutos por padrão
-  });
+  };
 
+  // Estado local para armazenar as regras dos 4 rounds
+  const [roundsConfig, setRoundsConfig] = useState({
+    1: { ...defaultRoundConfig }, // Round de Teste
+    2: { ...defaultRoundConfig }, // Round Oficial 1
+    3: { ...defaultRoundConfig }, // Round Oficial 2
+    4: { ...defaultRoundConfig }  // Round Oficial 3
+  });
   const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 
   useEffect(() => {
@@ -61,23 +67,26 @@ const Lobby = () => {
   const handleOpenConfig = (roomId, currentRoomData) => {
     setSelectedRoomId(roomId);
     
-    if (currentRoomData.config) {
-      setConfigForm({
-        prices: currentRoomData.config.prices || { A: 1, B: 2, C: 3, D: 4, E: 5 },
-        stockNeeded: currentRoomData.config.stockNeeded || { A: 1, B: 3, C: 1, D: 2, E: 2 },
-        productionGoal: currentRoomData.config.productionGoal || 100,
-        timeLimit: currentRoomData.config.timeLimit !== undefined ? currentRoomData.config.timeLimit : 300
+    if (currentRoomData.config && currentRoomData.config.rounds) {
+      setRoundsConfig(currentRoomData.config.rounds);
+    } else {
+      setRoundsConfig({
+        1: { ...defaultRoundConfig },
+        2: { ...defaultRoundConfig },
+        3: { ...defaultRoundConfig },
+        4: { ...defaultRoundConfig }
       });
     }
+    setActiveTab(1); // Sempre abre na aba do Round 1
     setIsModalOpen(true);
   };
 
-  // Salva os dados customizados diretamente na respectiva sala do Firebase
+  // Salva os dados de todos os rounds diretamente na respectiva sala do Firebase
   const handleSaveConfig = async (e) => {
     e.preventDefault();
     try {
-      const configRef = ref(db, `rooms/${selectedRoomId}/config`);
-      await set(configRef, configForm);
+      const configRef = ref(db, `rooms/${selectedRoomId}/config/rounds`);
+      await set(configRef, roundsConfig);
       alert(`${t('config_modal.alert_success')} ${selectedRoomId.replace('_', ' ').toUpperCase()}`);
       setIsModalOpen(false);
     } catch (error) {
@@ -144,9 +153,31 @@ const Lobby = () => {
       {/* MODAL DE CONFIGURAÇÃO DO ADMINISTRADOR */}
       {isModalOpen && (
         <div className="modal-overlay">
-          <div className="modal-content">
+          <div className="modal-content" style={{ maxWidth: '600px' }}>
             <h2>{t('config_modal.title')} {selectedRoomId.replace('_', ' ').toUpperCase()}</h2>
             
+            {/* ABAS DOS ROUNDS */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '2px solid #ecf0f1', paddingBottom: '10px' }}>
+              {[1, 2, 3, 4].map(num => (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => setActiveTab(num)}
+                  style={{
+                    padding: '8px 15px',
+                    backgroundColor: activeTab === num ? '#3498db' : '#ecf0f1',
+                    color: activeTab === num ? 'white' : '#7f8c8d',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Round {num} {num === 1 ? '(Teste)' : ''}
+                </button>
+              ))}
+            </div>
+
             <form onSubmit={handleSaveConfig}>
               
               {/* SEÇÃO 1: PREÇOS DAS CAIXINHAS */}
@@ -160,10 +191,13 @@ const Lobby = () => {
                         type="number" 
                         min="1" 
                         max="5" 
-                        value={configForm.prices[letter]}
-                        onChange={(e) => setConfigForm({
-                          ...configForm,
-                          prices: { ...configForm.prices, [letter]: parseInt(e.target.value) || 1 }
+                        value={roundsConfig[activeTab].prices[letter]}
+                        onChange={(e) => setRoundsConfig({
+                          ...roundsConfig,
+                          [activeTab]: {
+                            ...roundsConfig[activeTab],
+                            prices: { ...roundsConfig[activeTab].prices, [letter]: parseInt(e.target.value) || 1 }
+                          }
                         })}
                       />
                     </div>
@@ -182,10 +216,13 @@ const Lobby = () => {
                         type="number" 
                         min="1" 
                         max="9" 
-                        value={configForm.stockNeeded[letter]}
-                        onChange={(e) => setConfigForm({
-                          ...configForm,
-                          stockNeeded: { ...configForm.stockNeeded, [letter]: parseInt(e.target.value) || 1 }
+                        value={roundsConfig[activeTab].stockNeeded[letter]}
+                        onChange={(e) => setRoundsConfig({
+                          ...roundsConfig,
+                          [activeTab]: {
+                            ...roundsConfig[activeTab],
+                            stockNeeded: { ...roundsConfig[activeTab].stockNeeded, [letter]: parseInt(e.target.value) || 1 }
+                          }
                         })}
                       />
                     </div>
@@ -202,8 +239,11 @@ const Lobby = () => {
                     <input 
                       type="number" 
                       min="1"
-                      value={configForm.productionGoal}
-                      onChange={(e) => setConfigForm({ ...configForm, productionGoal: parseInt(e.target.value) || 20 })}
+                      value={roundsConfig[activeTab].productionGoal}
+                      onChange={(e) => setRoundsConfig({
+                        ...roundsConfig,
+                        [activeTab]: { ...roundsConfig[activeTab], productionGoal: parseInt(e.target.value) || 20 }
+                      })}
                     />
                   </div>
 
@@ -214,8 +254,11 @@ const Lobby = () => {
                     <input 
                       type="number" 
                       min="0"
-                      value={configForm.timeLimit}
-                      onChange={(e) => setConfigForm({ ...configForm, timeLimit: parseInt(e.target.value) || 0 })}
+                      value={roundsConfig[activeTab].timeLimit}
+                      onChange={(e) => setRoundsConfig({
+                        ...roundsConfig,
+                        [activeTab]: { ...roundsConfig[activeTab], timeLimit: parseInt(e.target.value) || 0 }
+                      })}
                     />
                   </div>
                 </div>
