@@ -67,7 +67,7 @@ preparation after de round 0. (V)
 
 17/07:
 Add a percentage to waste.
-Adicionar botao de exportar dados (está bugado!).
+Adicionar botao de exportar dados (está bugado!). (V)
 change round names;
 add name of the players; ocupation, information of the players; statitics of the players?!; 
 Feedback (text box and collect / join in the data) after the global statitics

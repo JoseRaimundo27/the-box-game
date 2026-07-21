@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
-import { ref, onValue, set, update } from 'firebase/database';
+import { ref, onValue, set, update, get } from 'firebase/database';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import { useTranslation } from 'react-i18next'; 
@@ -63,6 +63,67 @@ const Lobby = () => {
     }
   };
 
+  // FUNÇÃO EXCLUSIVA DO ADMIN PARA EXPORTAR DADOS DA PLANILHA EM CSV
+  const handleExportCSV = async () => {
+    try {
+      const historyRef = ref(db, 'match_history');
+      const snapshot = await get(historyRef);
+      const historyData = snapshot.val();
+
+      if (!historyData) {
+        alert("Nenhum dado de histórico de partidas foi encontrado para exportação.");
+        return;
+      }
+
+      const records = Object.values(historyData);
+
+      const headers = [
+        "ID_Sessao",
+        "Data_Hora",
+        "Sala",
+        "Round",
+        "Meta_Producao",
+        "Producao_Entregue",
+        "Taxa_Conclusao_Pct",
+        "Lead_Time_Segundos",
+        "WIP_Final",
+        "WIP_Medio",
+        "Custo_WIP_Final"
+      ];
+
+      const rows = records.map(record => {
+        return [
+          record.sessionId || "",
+          record.dateTime || "",
+          record.roomId || "",
+          record.round || "",
+          record.productionGoal !== undefined ? record.productionGoal : "",
+          record.productionDelivered !== undefined ? record.productionDelivered : "",
+          record.completionRatePct !== undefined ? record.completionRatePct : "",
+          record.leadTimeSeconds !== undefined ? record.leadTimeSeconds : "",
+          record.wipFinal !== undefined ? record.wipFinal : "",
+          record.wipAverage !== undefined ? record.wipAverage : "",
+          record.wipFinancialImpactFinal !== undefined ? record.wipFinancialImpactFinal : ""
+        ].join(";");
+      });
+
+      const csvContent = "\uFEFF" + [headers.join(";"), ...rows].join("\n");
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `historico_partidas_${Date.now()}.csv`);
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Erro ao gerar e exportar planilha CSV:", error);
+      alert("Ocorreu um erro técnico ao gerar a planilha de exportação.");
+    }
+  };
+
   // Abre o modal carregando as configurações atuais salvos no banco (ou defaults)
   const handleOpenConfig = (roomId, currentRoomData) => {
     setSelectedRoomId(roomId);
@@ -104,9 +165,32 @@ const Lobby = () => {
       <div className="lobby-header-actions">
         <h1>{t('lobby.title')}</h1>
         {isAdmin && (
-          <button className="btn-danger-reset" onClick={handleResetDatabase}>
-            {t('lobby.btn_reset')}
-          </button>
+          <div className="admin-buttons-group" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button 
+              className="btn-success-export" 
+              onClick={handleExportCSV}
+              style={{
+                backgroundColor: '#2ecc71',
+                color: '#fff',
+                border: 'none',
+                padding: '10px 15px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
+            >
+              📊 Exportar Planilha (CSV)
+            </button>
+            <button className="btn-danger-reset" onClick={handleResetDatabase}>
+              {t('lobby.btn_reset')}
+            </button>
+          </div>
         )}
       </div>
       
