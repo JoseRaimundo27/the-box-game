@@ -9,6 +9,7 @@
     "btn_confirm": "Enter",
     "btn_cancel": "Cancel",
     "alert_error": "Incorrect PIN! Try again."
+    
   },
   "lobby": {
     "title": "Room Lobby",
@@ -18,7 +19,8 @@
     "status_playing": "In Game",
     "players": "Players:",
     "btn_full": "Full Room",
-    "btn_enter": "Enter Room"
+    "btn_enter": "Enter Room",
+    "spreadsheet": "Export Spreadsheet"
   },
   "config_modal": {
     "title": "Advanced Room Config:",

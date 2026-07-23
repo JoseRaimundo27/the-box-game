@@ -185,7 +185,7 @@ const Lobby = () => {
               onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
               onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
             >
-              📊 Exportar Planilha (CSV)
+              📊 {t('lobby.spreadsheet')} (CSV)
             </button>
             <button className="btn-danger-reset" onClick={handleResetDatabase}>
               {t('lobby.btn_reset')}

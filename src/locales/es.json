@@ -18,7 +18,8 @@
     "status_playing": "En Juego",
     "players": "Jugadores:",
     "btn_full": "Sala Llena",
-    "btn_enter": "Entrar a la Sala"
+    "btn_enter": "Entrar a la Sala",
+    "spreadsheet": "Exportar Hoja de Cálculo"
   },
   "config_modal": {
     "title": "Configuración Avanzada de la Sala:",
