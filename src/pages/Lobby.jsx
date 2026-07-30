@@ -63,7 +63,7 @@ const Lobby = () => {
     }
   };
 
-  // FUNÇÃO EXCLUSIVA DO ADMIN PARA EXPORTAR DADOS DA PLANILHA EM CSV
+  // FUNÇÃO EXCLUSIVA DO ADMIN PARA EXPORTAR HISTÓRICO DAS PARTIDAS EM CSV
   const handleExportCSV = async () => {
     try {
       const historyRef = ref(db, 'match_history');
@@ -124,6 +124,65 @@ const Lobby = () => {
     }
   };
 
+  // FUNÇÃO EXCLUSIVA DO ADMIN PARA EXPORTAR OS FEEDBACKS DOS JOGADORES EM CSV
+  const handleExportFeedbackCSV = async () => {
+    try {
+      const feedbackRef = ref(db, 'player_feedbacks');
+      const snapshot = await get(feedbackRef);
+      const feedbackData = snapshot.val();
+
+      if (!feedbackData) {
+        alert("Nenhum feedback de jogador foi encontrado para exportação.");
+        return;
+      }
+
+      const records = Object.entries(feedbackData).map(([id, val]) => ({ id, ...val }));
+
+      const headers = [
+        "ID_Feedback",
+        "Data_Hora",
+        "Sala",
+        "Nome_Jogador",
+        "Cargo",
+        "Empresa",
+        "Nota_Rating",
+        "Comentario"
+      ];
+
+      const rows = records.map(record => {
+        const formattedDate = record.timestamp ? new Date(record.timestamp).toLocaleString("pt-BR") : "";
+        // Remove quebras de linha e escapa aspas para não quebrar o arquivo CSV
+        const cleanComment = (record.comment || "").replace(/;/g, ",").replace(/\n/g, " ");
+
+        return [
+          record.id || "",
+          formattedDate,
+          record.roomId || "",
+          record.playerName || "",
+          record.playerOccupation || "",
+          record.playerCompany || "",
+          record.rating !== undefined ? record.rating : "",
+          `"${cleanComment}"`
+        ].join(";");
+      });
+
+      const csvContent = "\uFEFF" + [headers.join(";"), ...rows].join("\n");
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `feedbacks_jogadores_${Date.now()}.csv`);
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Erro ao gerar e exportar planilha de feedbacks:", error);
+      alert("Ocorreu um erro técnico ao gerar a planilha de feedbacks.");
+    }
+  };
+
   // Abre o modal carregando as configurações atuais salvos no banco (ou defaults)
   const handleOpenConfig = (roomId, currentRoomData) => {
     setSelectedRoomId(roomId);
@@ -166,6 +225,7 @@ const Lobby = () => {
         <h1>{t('lobby.title')}</h1>
         {isAdmin && (
           <div className="admin-buttons-group" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            {/* BOTÃO EXPORTAR PARTIDAS */}
             <button 
               className="btn-success-export" 
               onClick={handleExportCSV}
@@ -187,6 +247,30 @@ const Lobby = () => {
             >
               📊 {t('lobby.spreadsheet')} (CSV)
             </button>
+
+            {/* BOTÃO EXPORTAR FEEDBACKS */}
+            <button 
+              className="btn-feedback-export" 
+              onClick={handleExportFeedbackCSV}
+              style={{
+                backgroundColor: '#f39c12',
+                color: '#fff',
+                border: 'none',
+                padding: '10px 15px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#d35400'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f39c12'}
+            >
+              ⭐ Feedbacks (CSV)
+            </button>
+
             <button className="btn-danger-reset" onClick={handleResetDatabase}>
               {t('lobby.btn_reset')}
             </button>

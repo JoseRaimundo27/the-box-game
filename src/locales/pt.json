@@ -8,8 +8,22 @@
     "pin_placeholder": "Senha do ADM",
     "btn_confirm": "Entrar",
     "btn_cancel": "Cancelar",
-    "alert_error": "PIN Incorreto! Tente novamente."
+    "alert_error": "PIN Incorreto! Tente novamente.",
+    "player_modal": {
+      "title": "Perfil do Jogador",
+      "subtitle": "Preencha alguns dados rápidos para te conhecermos melhor!",
+      "label_name": "Nome / Apelido *",
+      "placeholder_name": "Como quer ser chamado?",
+      "label_occupation": "Ocupação / Cargo",
+      "placeholder_occupation": "Ex: Analista, Estudante, Gerente...",
+      "label_company": "Empresa / Instituição",
+      "placeholder_company": "Onde você trabalha/estuda?",
+      "alert_name_required": "Por favor, insira pelo menos o seu nome para continuarmos.",
+      "btn_submit": "Entrar",
+      "btn_cancel": "Cancelar"
+    }
   },
+  
   "lobby": {
     "title": "Lobby de Salas",
     "subtitle": "Selecione uma sala disponível para entrar na linha de montagem.",
@@ -96,5 +110,14 @@
       "btn_new_game": "Nova Partida",
       "finish_simulation": "Finalizar Simulação"
     }
+  },
+  "feedback_modal": {
+  "title": "O que você achou?",
+  "subtitle": "Sua opinião é muito importante para nós!",
+  "rating_label": "Nota:",
+  "comment_label": "Comentários (opcional):",
+  "placeholder": "Escreva aqui sobre sua experiência na simulação...",
+  "btn_submit": "Enviar Feedback",
+  "btn_skip": "Pular"
   }
 }

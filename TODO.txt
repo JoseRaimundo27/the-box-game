@@ -66,11 +66,11 @@ The mistakes of the users -> KPI.
 preparation after de round 0. (V)
 
 17/07:
-Add a percentage to waste.
+Add a percentage to waste. (F) is better test the stantard game
 Adicionar botao de exportar dados (está bugado!). (V)
 change round names;
-add name of the players; ocupation, information of the players; statitics of the players?!; 
-Feedback (text box and collect / join in the data) after the global statitics
+add name of the players; ocupation, information of the players; statitics of the players?!; (V)
+Feedback (text box and collect / join in the data) after the global statitics (V)
 
 
 

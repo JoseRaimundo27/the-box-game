@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase/config";
-import { ref, onValue, update } from "firebase/database";
+import { ref, onValue, update, push, set } from "firebase/database";
 import { useGame } from "../context/GameContext";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -49,6 +49,10 @@ const Results = () => {
   const [currentRound, setCurrentRound] = useState(1);
   const [evolutionData, setEvolutionData] = useState([]); // Guarda a evolução da sala nos 3 rounds
   const [isRoundOver, setIsRoundOver] = useState(false); //para round
+
+  // ESTADOS DO FEEDBACK (Novo)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedback, setFeedback] = useState({ rating: 0, comment: "" });
 
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -282,7 +286,18 @@ const Results = () => {
     });
 
     return () => unsubscribe();
-  }, [currentRoom, i18n.language]);
+  }, [currentRoom, i18n.language, navigate]);
+
+  // FUNÇÃO INTERCEPTADORA DE SAÍDA / FIM
+  const handleExitOrFeedback = () => {
+    const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+    // Se for o fim do Round 4 e o usuário for um jogador convidado
+    if (currentRound === 4 && isRoundOver && !isAdmin) {
+      setShowFeedbackModal(true);
+    } else {
+      navigate("/");
+    }
+  };
 
   // FUNÇÃO PARA AVANÇAR DE ROUND
   const handleNextRound = () => {
@@ -297,6 +312,31 @@ const Results = () => {
         navigate("/game");
       });
     } else {
+      handleExitOrFeedback();
+    }
+  };
+
+  // ENVIAR FEEDBACK PARA O FIREBASE
+  const submitFeedback = async () => {
+    const feedbacksRef = ref(db, 'player_feedbacks');
+    const newFeedbackRef = push(feedbacksRef);
+    
+    const playerData = {
+      roomId: currentRoom || "sala_01",
+      playerName: sessionStorage.getItem('playerName') || 'Anônimo',
+      playerOccupation: sessionStorage.getItem('playerOccupation') || '',
+      playerCompany: sessionStorage.getItem('playerCompany') || '',
+      rating: feedback.rating,
+      comment: feedback.comment,
+      timestamp: Date.now()
+    };
+
+    try {
+      await set(newFeedbackRef, playerData);
+    } catch (error) {
+      console.error("Erro ao salvar feedback:", error);
+    } finally {
+      setShowFeedbackModal(false);
       navigate("/");
     }
   };
@@ -701,11 +741,56 @@ const Results = () => {
         <button
           className="restart-btn"
           style={{ backgroundColor: "#95a5a6" }}
-          onClick={() => navigate("/")}
+          onClick={handleExitOrFeedback}
         >
           {t("results.actions.btn_new_game", "Sair para o Menu")}
         </button>
       </div>
+
+      {/* MODAL DE FEEDBACK (VISÍVEL APENAS PARA JOGADORES NO FIM DA SIMULAÇÃO) */}
+      {showFeedbackModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', width: '90%', maxWidth: '400px', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
+            <h2 style={{ margin: '0 0 10px 0', color: '#2c3e50' }}>{t("feedback_modal.title", "O que você achou?")}</h2>
+            <p style={{ fontSize: '0.9em', color: '#7f8c8d', marginBottom: '20px' }}>{t("feedback_modal.subtitle", "Sua opinião é muito importante para nós!")}</p>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '10px' }}>{t("feedback_modal.rating_label", "Nota:")}</label>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', fontSize: '2rem' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span 
+                    key={star} 
+                    onClick={() => setFeedback({ ...feedback, rating: star })}
+                    style={{ cursor: 'pointer', color: feedback.rating >= star ? '#f1c40f' : '#ccc', transition: '0.2s' }}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px', textAlign: 'left' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', fontSize: '0.9em' }}>{t("feedback_modal.comment_label", "Comentários (opcional):")}</label>
+              <textarea 
+                rows="4"
+                placeholder={t("feedback_modal.placeholder", "Escreva aqui sobre sua experiência na simulação...")}
+                value={feedback.comment}
+                onChange={(e) => setFeedback({ ...feedback, comment: e.target.value })}
+                style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', resize: 'none', fontFamily: 'inherit' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={submitFeedback} style={{ flex: 1, padding: '12px', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
+                {t("feedback_modal.btn_submit", "Enviar Feedback")}
+              </button>
+              <button onClick={() => navigate("/")} style={{ flex: 1, padding: '12px', backgroundColor: '#95a5a6', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>
+                {t("feedback_modal.btn_skip", "Pular")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

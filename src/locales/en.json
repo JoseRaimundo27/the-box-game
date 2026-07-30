@@ -8,9 +8,23 @@
     "pin_placeholder": "Admin Password",
     "btn_confirm": "Enter",
     "btn_cancel": "Cancel",
-    "alert_error": "Incorrect PIN! Try again."
+    "alert_error": "Incorrect PIN! Try again.",
+    "player_modal": {
+      "title": "Player Profile",
+      "subtitle": "Fill in some quick details so we can get to know you better!",
+      "label_name": "Name / Nickname *",
+      "placeholder_name": "How would you like to be called?",
+      "label_occupation": "Occupation / Role",
+      "placeholder_occupation": "e.g., Analyst, Student, Manager...",
+      "label_company": "Company / Institution",
+      "placeholder_company": "Where do you work/study?",
+      "alert_name_required": "Please enter at least your name to continue.",
+      "btn_submit": "Enter",
+      "btn_cancel": "Cancel"
+    }
     
   },
+  
   "lobby": {
     "title": "Room Lobby",
     "subtitle": "Select an available room to enter the assembly line.",
@@ -97,5 +111,14 @@
       "btn_new_game": "New Match",
       "finish_simulation": "End Simulation"
     }
+  },
+  "feedback_modal": {
+  "title": "What did you think?",
+  "subtitle": "Your feedback is very important to us!",
+  "rating_label": "Rating:",
+  "comment_label": "Comments (optional):",
+  "placeholder": "Write about your experience in the simulation here...",
+  "btn_submit": "Submit Feedback",
+  "btn_skip": "Skip"
   }
 }
