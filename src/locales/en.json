@@ -34,7 +34,8 @@
     "players": "Players:",
     "btn_full": "Full Room",
     "btn_enter": "Enter Room",
-    "spreadsheet": "Export Spreadsheet"
+    "spreadsheet": "Export Spreadsheet",
+    "btn_logout": "Logout"
   },
   "config_modal": {
     "title": "Advanced Room Config:",

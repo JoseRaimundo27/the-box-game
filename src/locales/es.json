@@ -33,7 +33,8 @@
     "players": "Jugadores:",
     "btn_full": "Sala Llena",
     "btn_enter": "Entrar a la Sala",
-    "spreadsheet": "Exportar Hoja de Cálculo"
+    "spreadsheet": "Exportar Hoja de Cálculo",
+    "btn_logout": "Salir"
   },
   "config_modal": {
     "title": "Configuración Avanzada de la Sala:",

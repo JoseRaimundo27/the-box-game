@@ -33,7 +33,8 @@
     "players": "Jogadores:",
     "btn_full": "Sala Cheia",
     "btn_enter": "Entrar na Sala",
-    "spreadsheet": "Exportar Planilha"
+    "spreadsheet": "Exportar Planilha",
+    "btn_logout": "Sair"
   },
   "config_modal": {
     "title": "Configuração Avançada da Sala:",

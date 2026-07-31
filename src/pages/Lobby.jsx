@@ -214,6 +214,14 @@ const Lobby = () => {
     }
   };
 
+  const handleLogout = () => {
+      // Limpa os dados salvos da sessão atual
+      sessionStorage.clear();
+      
+      // Redireciona para a rota Home (/)
+      navigate('/');
+    };
+
   const countPlayers = (playersObj) => {
     if (!playersObj) return 0;
     return Object.values(playersObj).filter(p => p.uid !== "").length;
@@ -223,59 +231,85 @@ const Lobby = () => {
     <div className="lobby-container">
       <div className="lobby-header-actions">
         <h1>{t('lobby.title')}</h1>
-        {isAdmin && (
-          <div className="admin-buttons-group" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            {/* BOTÃO EXPORTAR PARTIDAS */}
-            <button 
-              className="btn-success-export" 
-              onClick={handleExportCSV}
-              style={{
-                backgroundColor: '#2ecc71',
-                color: '#fff',
-                border: 'none',
-                padding: '10px 15px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
-            >
-              📊 {t('lobby.spreadsheet')} (CSV)
-            </button>
+        
+        <div className="actions-buttons-wrapper" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          {isAdmin && (
+            <div className="admin-buttons-group" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              {/* BOTÃO EXPORTAR PARTIDAS */}
+              <button 
+                className="btn-success-export" 
+                onClick={handleExportCSV}
+                style={{
+                  backgroundColor: '#2ecc71',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '10px 15px',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
+              >
+                📊 {t('lobby.spreadsheet')} (CSV)
+              </button>
 
-            {/* BOTÃO EXPORTAR FEEDBACKS */}
-            <button 
-              className="btn-feedback-export" 
-              onClick={handleExportFeedbackCSV}
-              style={{
-                backgroundColor: '#f39c12',
-                color: '#fff',
-                border: 'none',
-                padding: '10px 15px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#d35400'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f39c12'}
-            >
-              ⭐ Feedbacks (CSV)
-            </button>
+              {/* BOTÃO EXPORTAR FEEDBACKS */}
+              <button 
+                className="btn-feedback-export" 
+                onClick={handleExportFeedbackCSV}
+                style={{
+                  backgroundColor: '#f39c12',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '10px 15px',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#d35400'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f39c12'}
+              >
+                ⭐ Feedbacks (CSV)
+              </button>
 
-            <button className="btn-danger-reset" onClick={handleResetDatabase}>
-              {t('lobby.btn_reset')}
-            </button>
-          </div>
-        )}
+              <button className="btn-danger-reset" onClick={handleResetDatabase}>
+                {t('lobby.btn_reset')}
+              </button>
+            </div>
+          )}
+
+          {/* 🚪 BOTÃO DE LOGOUT / SAIR */}
+          <button 
+            className="btn-logout" 
+            onClick={handleLogout}
+            style={{
+              backgroundColor: '#e74c3c',
+              color: '#fff',
+              border: 'none',
+              padding: '10px 15px',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c0392b'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#e74c3c'}
+          >
+            🚪 {t('lobby.btn_logout', 'Sair')}
+          </button>
+        </div>
       </div>
       
       <p>{t('lobby.subtitle')}</p>
