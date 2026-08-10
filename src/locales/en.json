@@ -65,7 +65,8 @@
     "progress": "Progress:",
     "station_label": "Station",
     "gabarito_title": "Delivery Template",
-    "stock_per_work": "Station Inventory"
+    "stock_per_work": "Station Inventory",
+    "remaining_stock": "Remaing Stock"
 
   },"results": {
     "header_title": "Industrial Performance Report",

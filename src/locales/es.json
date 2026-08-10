@@ -64,7 +64,8 @@
     "progress": "Avance:",
     "station_label": "Estación",
     "gabarito_title": "Modelo de Entrega",
-    "stock_per_work": "Inventario de la Estación"
+    "stock_per_work": "Inventario de la Estación",
+    "remaining_stock": "Inventario restante"
   },
   "results": {
     "header_title": "Informe de Rendimiento Industrial",

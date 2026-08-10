@@ -369,110 +369,112 @@ const Game = () => {
 
           const gridSlotsCount = Math.max(9, totalExpectedBlocks);
 
-          return (
-            <React.Fragment key={letter}>
-              <div className={`station-card ${isMe ? "is-me" : ""}`}>
+              return (
+      <React.Fragment key={letter}>
+        <div className={`station-card ${isMe ? "is-me" : ""}`}>
+          <div
+            className="station-label"
+            style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+          >
+            <span>
+              {t("game.station_label")} {letter}
+            </span>
+            
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", fontSize: "0.85em" }}>
+              <span style={{ color: "#2ecc71" }}>
+                {t("game.stock_per_work")}: {config.stockNeeded[letter]}
+              </span>
+              <span style={{ color: "#f39c12", fontWeight: "bold", marginTop: "2px" }}>
+              {t("game.remaining_stock")}: {prod.stocks[letter]}
+              </span>
+            </div>
+          </div>
+
+          <div className="work-bench">
+            <div
+              className={`cube-grid ${letter === "E" ? "final-container" : ""}`}
+            >
+              {[...Array(gridSlotsCount)].map((_, i) => (
                 <div
-                  className="station-label"
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  <span>
-                    {t("game.station_label")} {letter}
-                  </span>
-                  <span style={{ color: "#2ecc71", fontSize: "0.85em" }}>
-                    <span>
-                      {t("game.stock_per_work")}: {config.stockNeeded[letter]}
-                    </span>
-                  </span>
-                </div>
+                  key={i}
+                  className={`slot ${composition[i] ? `filled ${composition[i]}` : "empty"}`}
+                />
+              ))}
+            </div>
+          </div>
 
-                <div className="work-bench">
-                  <div
-                    className={`cube-grid ${letter === "E" ? "final-container" : ""}`}
-                  >
-                    {[...Array(gridSlotsCount)].map((_, i) => (
-                      <div
-                        key={i}
-                        className={`slot ${composition[i] ? `filled ${composition[i]}` : "empty"}`}
-                      />
-                    ))}
-                  </div>
-                </div>
+          <div className="station-controls">
+            {letter !== "A" && (
+              <button
+                disabled={
+                  !isMe ||
+                  work.wipItems > 0 ||
+                  prod.wips[specs[`station_${letter}`].prevWip] <= 0
+                }
+                onClick={() => handleAction("WIP")}
+                title={t("game.btn_wip")}
+                style={{ fontSize: "1.3rem", padding: "6px 12px" }}
+              >
+                WIP
+              </button>
+            )}
 
-                <div className="station-controls">
+            <button
+              disabled={
+                !isMe ||
+                work.stockItems >= specs[`station_${letter}`].stockNeeded ||
+                prod.stocks[letter] <= 0
+              }
+              onClick={() => handleAction("STOCK")}
+              title={t("game.btn_stock")}
+              style={{ fontSize: "1.1rem", padding: "6px 12px" }}
+            >
+              ⬆️ 
+            </button>
 
-                    {letter !== "A" && (
-                    <button
-                      disabled={
-                        !isMe ||
-                        work.wipItems > 0 ||
-                        prod.wips[specs[`station_${letter}`].prevWip] <= 0
-                      }
-                      onClick={() => handleAction("WIP")}
-                      title={t("game.btn_wip")}
-                      style={{ fontSize: "1.3rem", padding: "6px 12px" }}
-                    >
-                      WIP
-                    </button>
-                  )}
+            <button
+              className="btn-send"
+              disabled={!isMe || !isFull}
+              onClick={() => handleAction("SEND")}
+              title={t("game.btn_send")}
+              style={{ fontSize: "1.3rem", padding: "6px 12px" }}
+            >
+              ➡️
+            </button>
+          </div>
 
-                  <button
-                    disabled={
-                      !isMe ||
-                      work.stockItems >=
-                        specs[`station_${letter}`].stockNeeded ||
-                      prod.stocks[letter] <= 0
-                    }
-                    onClick={() => handleAction("STOCK")}
-                    title={t("game.btn_stock")}
-                    style={{ fontSize: "1.3rem", padding: "6px 12px" }}
-                  >
-                    ⬆️
-                  </button>
+          <div className="reference-gabarito">
+            <div className="gabarito-title">
+              {t("game.gabarito_title")}
+            </div>
+            <div
+              className={`cube-grid gabarito-grid ${letter === "E" ? "final-container-ref" : ""}`}
+            >
+              {[...Array(gridSlotsCount)].map((_, i) => (
+                <div
+                  key={`g-${i}`}
+                  className={`slot slot-gabarito ${gabaritoComp[i] ? `filled ${gabaritoComp[i]}` : "empty-gabarito"}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
 
-                  <button
-                    className="btn-send"
-                    disabled={!isMe || !isFull}
-                    onClick={() => handleAction("SEND")}
-                    title={t("game.btn_send")}
-                    style={{ fontSize: "1.3rem", padding: "6px 12px" }}
-                  >
-                    ➡️
-                  </button>
-                </div>
-
-                <div className="reference-gabarito">
-                  <div className="gabarito-title">
-                    {t("game.gabarito_title")}
-                  </div>
-                  <div
-                    className={`cube-grid gabarito-grid ${letter === "E" ? "final-container-ref" : ""}`}
-                  >
-                    {[...Array(gridSlotsCount)].map((_, i) => (
-                      <div
-                        key={`g-${i}`}
-                        className={`slot slot-gabarito ${gabaritoComp[i] ? `filled ${gabaritoComp[i]}` : "empty-gabarito"}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {letter !== "E" && (
-                <div className="wip-flow-indicator">
-                  <div className="wip-triangle">
-                    <span className="wip-value">
-                      {prod.wips[specs[`station_${letter}`].nextWip]}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
-    </div>
-  );
+        {letter !== "E" && (
+          <div className="wip-flow-indicator">
+            <div className="wip-triangle">
+              <span className="wip-value">
+                {prod.wips[specs[`station_${letter}`].nextWip]}
+              </span>
+            </div>
+          </div>
+        )}
+      </React.Fragment>
+    );
+            })}
+          </div>
+        </div>
+      );
 };
 
 export default Game;

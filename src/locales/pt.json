@@ -64,7 +64,8 @@
     "progress": "Progresso:",
     "station_label": "Estação",
     "gabarito_title": "Gabarito de Entrega",
-    "stock_per_work": "Estoque da Estação"
+    "stock_per_work": "Estoque da Estação",
+    "remaining_stock": "Estoque Restante"
   },
   "results": {
     "header_title": "Relatório de Performance Industrial",
