@@ -133,7 +133,6 @@ const Results = () => {
             wipPriceValue: Number(val.wip_value) || 0,
           }))
           .sort((a, b) => a.timestamp - b.timestamp);
-
         if (historyArray.length > 0) {
           const startTime = historyArray[0].timestamp;
 
@@ -168,6 +167,23 @@ const Results = () => {
             completionRate: percentage.toFixed(0),
             finalWip: finalWip,
           });
+
+          if (roundAcabou) {
+            const matchHistoryRef = ref(db, `match_history/${currentRoom}/round_${activeRound}`);
+            
+            update(matchHistoryRef, {
+              roomId: currentRoom,
+              round: activeRound,
+              leadTime: Number(totalTime.toFixed(1)),
+              avgWip: Number(avgWip.toFixed(2)),
+              financialImpact: finalFinancialValue, // Salva valor Numérico bruto para o Excel
+              completionRate: Number(percentage.toFixed(0)),
+              finalWip: finalWip,
+              finishedTotal: lastCount,
+              goal: currentGoal,
+              timestamp: Date.now()
+            }).catch((err) => console.error("Erro ao salvar histórico da partida:", err));
+          }
         } else {
           setData([]); 
         }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
-import { ref, onValue, set, update, get } from 'firebase/database';
+import { ref, onValue, set, get } from 'firebase/database';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import { useTranslation } from 'react-i18next'; 
@@ -15,21 +15,20 @@ const Lobby = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState('');
-  const [activeTab, setActiveTab] = useState(1); // Controla qual round estamos editando no modal
+  const [activeTab, setActiveTab] = useState(1); 
   
   const defaultRoundConfig = {
     prices: { A: 1, B: 2, C: 3, D: 4, E: 5 },
-    stockNeeded: { A: 1, B: 3, C: 1, D: 2, E: 2}, // voltando para 13122
+    stockNeeded: { A: 1, B: 3, C: 1, D: 2, E: 2 }, 
     productionGoal: 100,
-    timeLimit: 300 // 5 minutos por padrão
+    timeLimit: 300 
   };
 
-  // Estado local para armazenar as regras dos 4 rounds
   const [roundsConfig, setRoundsConfig] = useState({
-    1: { ...defaultRoundConfig }, // Round de Teste
-    2: { ...defaultRoundConfig }, // Round Oficial 1
-    3: { ...defaultRoundConfig }, // Round Oficial 2
-    4: { ...defaultRoundConfig }  // Round Oficial 3
+    1: { ...defaultRoundConfig }, 
+    2: { ...defaultRoundConfig }, 
+    3: { ...defaultRoundConfig }, 
+    4: { ...defaultRoundConfig }  
   });
   const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 
@@ -63,7 +62,86 @@ const Lobby = () => {
     }
   };
 
-  // FUNÇÃO EXCLUSIVA DO ADMIN PARA EXPORTAR HISTÓRICO DAS PARTIDAS EM CSV
+  // ==========================================
+  // PARSER DE DADOS DO MATCH_HISTORY
+  // ==========================================
+  const parseMatchRecords = (historyData) => {
+    let records = [];
+    if (!historyData) return records;
+
+    // Varre todas as salas (ex: sala_01, sala_02...)
+    Object.entries(historyData).forEach(([roomId, roomRounds]) => {
+      if (roomRounds && typeof roomRounds === 'object') {
+        // Varre todos os rounds (ex: round_1, round_2...)
+        Object.entries(roomRounds).forEach(([roundKey, record]) => {
+          if (record && typeof record === 'object') {
+            const ts = record.timestamp || 0;
+            records.push({
+              roomId: record.roomId || roomId,
+              round: record.round || roundKey.replace('round_', ''),
+              leadTime: record.leadTime !== undefined ? record.leadTime : "",
+              avgWip: record.avgWip !== undefined ? record.avgWip : "",
+              financialImpact: record.financialImpact !== undefined ? record.financialImpact : "",
+              completionRate: record.completionRate !== undefined ? record.completionRate : "",
+              finalWip: record.finalWip !== undefined ? record.finalWip : "",
+              finishedTotal: record.finishedTotal !== undefined ? record.finishedTotal : "",
+              goal: record.goal !== undefined ? record.goal : "",
+              timestamp: ts,
+              dateTime: ts ? new Date(ts).toLocaleString("pt-BR") : ""
+            });
+          }
+        });
+      }
+    });
+
+    // Ordena do mais antigo para o mais recente por data/hora
+    records.sort((a, b) => a.timestamp - b.timestamp);
+    return records;
+  };
+
+  const generateCSVDownload = (records, filenamePrefix) => {
+    const headers = [
+      "Data_Hora",
+      "Sala",
+      "Round",
+      "Meta_Producao",
+      "Producao_Entregue",
+      "Taxa_Conclusao_Pct",
+      "Lead_Time_Segundos",
+      "WIP_Final",
+      "WIP_Medio",
+      "Custo_WIP_Final"
+    ];
+
+    const rows = records.map(record => {
+      return [
+        record.dateTime || "",
+        record.roomId || "",
+        record.round || "",
+        record.goal,
+        record.finishedTotal,
+        record.completionRate,
+        record.leadTime,
+        record.finalWip,
+        record.avgWip,
+        record.financialImpact
+      ].join(";");
+    });
+
+    const csvContent = "\uFEFF" + [headers.join(";"), ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${filenamePrefix}_${Date.now()}.csv`);
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // 1. EXPORTAR TODAS AS PARTIDAS DE TODAS AS SALAS
   const handleExportCSV = async () => {
     try {
       const historyRef = ref(db, 'match_history');
@@ -75,56 +153,53 @@ const Lobby = () => {
         return;
       }
 
-      const records = Object.values(historyData);
+      const records = parseMatchRecords(historyData);
 
-      const headers = [
-        "ID_Sessao",
-        "Data_Hora",
-        "Sala",
-        "Round",
-        "Meta_Producao",
-        "Producao_Entregue",
-        "Taxa_Conclusao_Pct",
-        "Lead_Time_Segundos",
-        "WIP_Final",
-        "WIP_Medio",
-        "Custo_WIP_Final"
-      ];
+      if (records.length === 0) {
+        alert("Nenhum registro válido de partida foi encontrado.");
+        return;
+      }
 
-      const rows = records.map(record => {
-        return [
-          record.sessionId || "",
-          record.dateTime || "",
-          record.roomId || "",
-          record.round || "",
-          record.productionGoal !== undefined ? record.productionGoal : "",
-          record.productionDelivered !== undefined ? record.productionDelivered : "",
-          record.completionRatePct !== undefined ? record.completionRatePct : "",
-          record.leadTimeSeconds !== undefined ? record.leadTimeSeconds : "",
-          record.wipFinal !== undefined ? record.wipFinal : "",
-          record.wipAverage !== undefined ? record.wipAverage : "",
-          record.wipFinancialImpactFinal !== undefined ? record.wipFinancialImpactFinal : ""
-        ].join(";");
-      });
-
-      const csvContent = "\uFEFF" + [headers.join(";"), ...rows].join("\n");
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `historico_partidas_${Date.now()}.csv`);
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      generateCSVDownload(records, "historico_todas_partidas");
     } catch (error) {
       console.error("Erro ao gerar e exportar planilha CSV:", error);
       alert("Ocorreu um erro técnico ao gerar a planilha de exportação.");
     }
   };
 
-  // FUNÇÃO EXCLUSIVA DO ADMIN PARA EXPORTAR OS FEEDBACKS DOS JOGADORES EM CSV
+  // 2. EXPORTAR APENAS A ÚLTIMA PARTIDA/SESSÃO
+  const handleExportLatestCSV = async () => {
+    try {
+      const historyRef = ref(db, 'match_history');
+      const snapshot = await get(historyRef);
+      const historyData = snapshot.val();
+
+      if (!historyData) {
+        alert("Nenhum dado de histórico de partidas foi encontrado para exportação.");
+        return;
+      }
+
+      const records = parseMatchRecords(historyData);
+
+      if (records.length === 0) {
+        alert("Nenhum registro válido de partida foi encontrado.");
+        return;
+      }
+
+      // Identifica o timestamp mais recente registrado
+      const maxTimestamp = Math.max(...records.map(r => r.timestamp));
+      
+      // Filtra os registros gerados na janela da última partida (últimas 2 horas do último registro)
+      const latestRecords = records.filter(r => (maxTimestamp - r.timestamp) <= 7200000);
+
+      generateCSVDownload(latestRecords, "historico_ultima_partida");
+    } catch (error) {
+      console.error("Erro ao gerar planilha da última partida:", error);
+      alert("Ocorreu um erro técnico ao gerar a planilha de exportação.");
+    }
+  };
+
+  // EXPORTAR FEEDBACKS DOS JOGADORES
   const handleExportFeedbackCSV = async () => {
     try {
       const feedbackRef = ref(db, 'player_feedbacks');
@@ -151,7 +226,6 @@ const Lobby = () => {
 
       const rows = records.map(record => {
         const formattedDate = record.timestamp ? new Date(record.timestamp).toLocaleString("pt-BR") : "";
-        // Remove quebras de linha e escapa aspas para não quebrar o arquivo CSV
         const cleanComment = (record.comment || "").replace(/;/g, ",").replace(/\n/g, " ");
 
         return [
@@ -183,7 +257,6 @@ const Lobby = () => {
     }
   };
 
-  // Abre o modal carregando as configurações atuais salvos no banco (ou defaults)
   const handleOpenConfig = (roomId, currentRoomData) => {
     setSelectedRoomId(roomId);
     
@@ -197,11 +270,10 @@ const Lobby = () => {
         4: { ...defaultRoundConfig }
       });
     }
-    setActiveTab(1); // Sempre abre na aba do Round 1
+    setActiveTab(1); 
     setIsModalOpen(true);
   };
 
-  // Salva os dados de todos os rounds diretamente na respectiva sala do Firebase
   const handleSaveConfig = async (e) => {
     e.preventDefault();
     try {
@@ -215,12 +287,9 @@ const Lobby = () => {
   };
 
   const handleLogout = () => {
-      // Limpa os dados salvos da sessão atual
-      sessionStorage.clear();
-      
-      // Redireciona para a rota Home (/)
-      navigate('/');
-    };
+    sessionStorage.clear();
+    navigate('/');
+  };
 
   const countPlayers = (playersObj) => {
     if (!playersObj) return 0;
@@ -235,7 +304,7 @@ const Lobby = () => {
         <div className="actions-buttons-wrapper" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {isAdmin && (
             <div className="admin-buttons-group" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              {/* BOTÃO EXPORTAR PARTIDAS */}
+              {/* BOTÃO TODAS AS PARTIDAS */}
               <button 
                 className="btn-success-export" 
                 onClick={handleExportCSV}
@@ -255,7 +324,30 @@ const Lobby = () => {
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
               >
-                📊 {t('lobby.spreadsheet')} (CSV)
+                📊 Todas as Partidas (CSV)
+              </button>
+
+              {/* BOTÃO ÚLTIMA PARTIDA */}
+              <button 
+                className="btn-latest-export" 
+                onClick={handleExportLatestCSV}
+                style={{
+                  backgroundColor: '#3498db',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '10px 15px',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2980b9'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3498db'}
+              >
+                ⏱️ Última Partida (CSV)
               </button>
 
               {/* BOTÃO EXPORTAR FEEDBACKS */}
@@ -287,7 +379,7 @@ const Lobby = () => {
             </div>
           )}
 
-          {/* 🚪 BOTÃO DE LOGOUT / SAIR */}
+          {/* 🚪 BOTÃO DE LOGOUT */}
           <button 
             className="btn-logout" 
             onClick={handleLogout}
@@ -321,7 +413,6 @@ const Lobby = () => {
 
           return (
             <div key={roomId} className="room-card">
-              {/* BOTÃO DE ENGRENAGEM EXCLUSIVO DO ADMIN */}
               {isAdmin && (
                 <button 
                   className="btn-room-config" 
@@ -358,7 +449,6 @@ const Lobby = () => {
           <div className="modal-content" style={{ maxWidth: '600px' }}>
             <h2>{t('config_modal.title')} {selectedRoomId.replace('_', ' ').toUpperCase()}</h2>
             
-            {/* ABAS DOS ROUNDS */}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '2px solid #ecf0f1', paddingBottom: '10px' }}>
               {[1, 2, 3, 4].map(num => (
                 <button
@@ -381,8 +471,6 @@ const Lobby = () => {
             </div>
 
             <form onSubmit={handleSaveConfig}>
-              
-              {/* SEÇÃO 1: PREÇOS DAS CAIXINHAS */}
               <fieldset>
                 <legend>{t('config_modal.tab_prices')}</legend>
                 <div className="config-row-inputs">
@@ -407,7 +495,6 @@ const Lobby = () => {
                 </div>
               </fieldset>
 
-              {/* SEÇÃO 2: NÚMERO DE CAIXINHAS NA BANCADA */}
               <fieldset>
                 <legend>{t('config_modal.tab_stations')}</legend>
                 <div className="config-row-inputs">
@@ -432,7 +519,6 @@ const Lobby = () => {
                 </div>
               </fieldset>
 
-              {/* SEÇÃO 3: REGRAS E METAS GERAIS */}
               <fieldset>
                 <legend>{t('config_modal.tab_rules')}</legend>
                 <div className="form-double-column">
@@ -466,7 +552,6 @@ const Lobby = () => {
                 </div>
               </fieldset>
 
-              {/* BOTÕES DE AÇÃO DO MODAL */}
               <div className="modal-actions-wrapper">
                 <button type="submit" className="btn-modal-save">{t('config_modal.btn_save')}</button>
                 <button type="button" className="btn-modal-close" onClick={() => setIsModalOpen(false)}>{t('config_modal.btn_close')}</button>
