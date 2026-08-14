@@ -131,6 +131,11 @@ const Results = () => {
             count: Number(val.count) || 0,
             wip: Number(val.wip_total) || 0,
             wipPriceValue: Number(val.wip_value) || 0,
+            stationA: Number(val.stationA) || 0,
+            stationB: Number(val.stationB) || 0,
+            stationC: Number(val.stationC) || 0,
+            stationD: Number(val.stationD) || 0,
+            stationE: Number(val.stationE) || 0,
           }))
           .sort((a, b) => a.timestamp - b.timestamp);
         if (historyArray.length > 0) {
@@ -514,10 +519,32 @@ const Results = () => {
               </LineChart>
             </ResponsiveContainer>
           </div>
+
+          <div className="chart-box" style={{ marginTop: "20px" }}>
+          <h2>{t("results.charts.s_curve_stations_title", "Curva S por Estação ")}</h2>
+          <div style={{ width: "100%", height: 300 }}>
+            <ResponsiveContainer>
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="timeLabel" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {/* Uma linha para cada estação. Cores distintas ajudam na leitura visual. */}
+                <Line type="monotone" dataKey="stationA" name="Estação A" stroke="#9b59b6" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="stationB" name="Estação B" stroke="#e67e22" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="stationC" name="Estação C" stroke="#f1c40f" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="stationD" name="Estação D" stroke="#2ecc71" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="stationE" name="Estação E" stroke="#e74c3c" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+        </div>
         </div>
       </div>
 
-      {/* 🛑 A MÁGICA DO PASSO 3: BENCHMARKING GLOBAL ESCONDIDO 🛑 */}
+      {/*  BENCHMARKING GLOBAL ESCONDIDO 🛑 */}
       {currentRound === 4 && isRoundOver && (
         <section className="ranking-section">
           <h2>

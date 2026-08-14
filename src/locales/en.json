@@ -88,7 +88,8 @@
       "time_axis": "Time",
       "units_axis": "Units",
       "finished_products": "Finished Products",
-      "wip_items": "Items in WIP"
+      "wip_items": "Items in WIP",
+      "s_curve_stations_title": "S-Curve per Stations "
     },
     "ranking": {
       "title": "Global Benchmarking (Top Rooms)",

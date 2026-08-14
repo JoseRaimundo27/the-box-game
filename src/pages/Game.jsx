@@ -147,6 +147,7 @@ const Game = () => {
     if (roomData && !prodExists && currentRoom) {
       const initialProduction = {
         finished_total: 0,
+        station_counts: { A: 0, B: 0, C: 0, D: 0, E: 0 },
         stocks: { A: 200, B: 200, C: 200, D: 200, E: 200 },
         wips: { ab: 0, bc: 0, cd: 0, de: 0 },
         workAreas: {
@@ -278,39 +279,55 @@ const Game = () => {
       if (type === "SEND") {
         const isFinished = mySpec.nextWip === "finish";
 
+        // 1. Inicializa o rastreador se for um round antigo e não existir
+        if (!current.station_counts) {
+          current.station_counts = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+        }
+        
+        // 2. Registra que esta estação terminou e passou uma peça para frente
+        current.station_counts[sLetter]++;
+
         if (isFinished) {
           current.finished_total++;
-
-          const ab = current.wips.ab || 0;
-          const bc = current.wips.bc || 0;
-          const cd = current.wips.cd || 0;
-          const de = current.wips.de || 0;
-          const snapshotWipValue =
-            ab * WIP_STAGE_PRICES.ab +
-            bc * WIP_STAGE_PRICES.bc +
-            cd * WIP_STAGE_PRICES.cd +
-            de * WIP_STAGE_PRICES.de;
-
-          const snapshot = {
-            count: current.finished_total,
-            wip_total: ab + bc + cd + de,
-            wip_value: snapshotWipValue,
-            timestamp: Date.now(),
-          };
-
-          // ROTA DINÂMICA DO HISTÓRICO: Salva o S-curve de forma isolada por round
-          const historyRef = ref(
-            db,
-            `rooms/${currentRoom}/rounds/${currentRound}/history/${snapshot.timestamp}`,
-          );
-          import("firebase/database").then(({ set }) => {
-            set(historyRef, snapshot);
-          });
         } else {
           current.wips[mySpec.nextWip]++;
         }
 
+        // Limpa a mesa após o envio
         current.workAreas[sLetter] = { stockItems: 0, wipItems: 0 };
+
+        // 3. TIRAR A "FOTO" PARA O GRÁFICO (AGORA FUNCIONA PARA TODAS AS MESAS)
+        const ab = current.wips.ab || 0;
+        const bc = current.wips.bc || 0;
+        const cd = current.wips.cd || 0;
+        const de = current.wips.de || 0;
+        const snapshotWipValue =
+          ab * WIP_STAGE_PRICES.ab +
+          bc * WIP_STAGE_PRICES.bc +
+          cd * WIP_STAGE_PRICES.cd +
+          de * WIP_STAGE_PRICES.de;
+
+        const snapshot = {
+          count: current.finished_total,
+          wip_total: ab + bc + cd + de,
+          wip_value: snapshotWipValue,
+          // 👇 Salva a contagem de cada mesa no momento exato do envio!
+          stationA: current.station_counts.A,
+          stationB: current.station_counts.B,
+          stationC: current.station_counts.C,
+          stationD: current.station_counts.D,
+          stationE: current.station_counts.E,
+          timestamp: Date.now(),
+        };
+
+        // ROTA DINÂMICA DO HISTÓRICO: Salva o S-curve de forma isolada por round
+        const historyRef = ref(
+          db,
+          `rooms/${currentRoom}/rounds/${currentRound}/history/${snapshot.timestamp}`
+        );
+        import("firebase/database").then(({ set }) => {
+          set(historyRef, snapshot);
+        });
       }
 
       return current;

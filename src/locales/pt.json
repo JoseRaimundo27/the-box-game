@@ -87,7 +87,8 @@
       "time_axis": "Tempo",
       "units_axis": "Unidades",
       "finished_products": "Produtos Acabados",
-      "wip_items": "Itens no WIP"
+      "wip_items": "Itens no WIP",
+      "s_curve_stations_title": "Curva em S por estação"
     },
     "ranking": {
       "title": "Benchmarking Global (Top Salas)",
