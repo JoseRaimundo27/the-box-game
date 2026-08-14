@@ -17,10 +17,12 @@
       "label_occupation": "Ocupação / Cargo",
       "placeholder_occupation": "Ex: Analista, Estudante, Gerente...",
       "label_company": "Empresa / Instituição",
+      "placeholder_age": "Qual sua idade?",
       "placeholder_company": "Onde você trabalha/estuda?",
       "alert_name_required": "Por favor, insira pelo menos o seu nome para continuarmos.",
       "btn_submit": "Entrar",
-      "btn_cancel": "Cancelar"
+      "btn_cancel": "Cancelar",
+      "age": "Idade"
     }
   },
   

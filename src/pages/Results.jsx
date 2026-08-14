@@ -342,6 +342,7 @@ const Results = () => {
       playerName: sessionStorage.getItem('playerName') || 'Anônimo',
       playerOccupation: sessionStorage.getItem('playerOccupation') || '',
       playerCompany: sessionStorage.getItem('playerCompany') || '',
+      playerAge: sessionStorage.getItem('playerAge') || '',
       rating: feedback.rating,
       comment: feedback.comment,
       timestamp: Date.now()

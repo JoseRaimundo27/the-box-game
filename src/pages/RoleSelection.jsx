@@ -16,7 +16,8 @@ const RoleSelection = () => {
   const [playerInfo, setPlayerInfo] = useState({
     name: '',
     occupation: '',
-    company: ''
+    company: '',
+    age: ''
   });
 
   // CÓDIGO/PIN MOCKADO PARA ACESSO DO ADMINISTRADOR
@@ -41,6 +42,7 @@ const RoleSelection = () => {
     sessionStorage.setItem('playerName', playerInfo.name);
     sessionStorage.setItem('playerOccupation', playerInfo.occupation);
     sessionStorage.setItem('playerCompany', playerInfo.company);
+    sessionStorage.setItem('playerAge', playerInfo.age);
     
     navigate('/lobby');
   };
@@ -159,6 +161,17 @@ const RoleSelection = () => {
                   placeholder={t('role_selection.player_modal.placeholder_company')}
                   value={playerInfo.company}
                   onChange={(e) => setPlayerInfo({ ...playerInfo, company: e.target.value })}
+                  style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '1rem' }}
+                />
+              </div>
+
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <label style={{ fontWeight: 'bold', fontSize: '0.9em', color: '#333' }}>{t('role_selection.player_modal.age')}</label>
+                <input 
+                  type="text" 
+                  placeholder={t('role_selection.player_modal.placeholder_age')}
+                  value={playerInfo.age}
+                  onChange={(e) => setPlayerInfo({ ...playerInfo, age: e.target.value })}
                   style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '1rem' }}
                 />
               </div>

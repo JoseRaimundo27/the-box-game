@@ -101,16 +101,16 @@ const Lobby = () => {
 
   const generateCSVDownload = (records, filenamePrefix) => {
     const headers = [
-      "Data_Hora",
-      "Sala",
+      "Date",
+      "Room",
       "Round",
-      "Meta_Producao",
-      "Producao_Entregue",
+      "Goal_Production",
+      "Production_Delivered",
       "Taxa_Conclusao_Pct",
-      "Lead_Time_Segundos",
+      "Lead_Time_Seconds",
       "WIP_Final",
-      "WIP_Medio",
-      "Custo_WIP_Final"
+      "AVG_WIP",
+      "Final_Cost_WIP"
     ];
 
     const rows = records.map(record => {
@@ -213,32 +213,34 @@ const Lobby = () => {
 
       const records = Object.entries(feedbackData).map(([id, val]) => ({ id, ...val }));
 
-      const headers = [
-        "ID_Feedback",
-        "Data_Hora",
-        "Sala",
-        "Nome_Jogador",
-        "Cargo",
-        "Empresa",
-        "Nota_Rating",
-        "Comentario"
-      ];
+          const headers = [
+      "ID_Feedback",
+      "Date",
+      "Room",
+      "Player_name",
+      "Occupation",
+      "Company",
+      "Age",        
+      "Rating",      
+      "Comments"     
+    ];
 
-      const rows = records.map(record => {
-        const formattedDate = record.timestamp ? new Date(record.timestamp).toLocaleString("pt-BR") : "";
-        const cleanComment = (record.comment || "").replace(/;/g, ",").replace(/\n/g, " ");
+    const rows = records.map(record => {
+      const formattedDate = record.timestamp ? new Date(record.timestamp).toLocaleString("pt-BR") : "";
+      const cleanComment = (record.comment || "").replace(/;/g, ",").replace(/\n/g, " ");
 
-        return [
-          record.id || "",
-          formattedDate,
-          record.roomId || "",
-          record.playerName || "",
-          record.playerOccupation || "",
-          record.playerCompany || "",
-          record.rating !== undefined ? record.rating : "",
-          `"${cleanComment}"`
-        ].join(";");
-      });
+      return [
+        record.id || "",
+        formattedDate,
+        record.roomId || "",
+        record.playerName || "",
+        record.playerOccupation || "",
+        record.playerCompany || "",
+        record.playerAge || "", // 👈 Faltava este campo aqui!
+        record.rating !== undefined ? record.rating : "",
+        `"${cleanComment}"`
+      ].join(";");
+    });
 
       const csvContent = "\uFEFF" + [headers.join(";"), ...rows].join("\n");
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

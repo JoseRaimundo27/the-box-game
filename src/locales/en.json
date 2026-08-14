@@ -18,9 +18,11 @@
       "placeholder_occupation": "e.g., Analyst, Student, Manager...",
       "label_company": "Company / Institution",
       "placeholder_company": "Where do you work/study?",
+      "placeholder_age": "How old are you?",
       "alert_name_required": "Please enter at least your name to continue.",
       "btn_submit": "Enter",
-      "btn_cancel": "Cancel"
+      "btn_cancel": "Cancel",
+      "age": "Age"
     }
     
   },

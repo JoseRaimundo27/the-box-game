@@ -73,15 +73,15 @@ add name of the players; ocupation, information of the players; statitics of the
 Feedback (text box and collect / join in the data) after the global statitics (V)
 
 31/07:
-Nova coluna para year of experience para o feedback; roll/ocupation; Age
-olhar se o reset ta apagando feedback/data
-checar se pode jogar no celular
+Nova coluna para year of experience para o feedback; roll/ocupation; Age (V)
+checar se pode jogar no celular (V)
 Maybe colocar automatico quando clilcar em inciar round the polayers sao teleportados para o /game
 Maybe a button do start, redundancia. Para coordenação
+S curves por stations? IMAGE; maybe KPIS para o station.    
+olhar se o reset ta apagando feedback/data (V)
 referencia para estação quanto falta para terminar sua produção * Very important (V)
-S curves por stations? IMAGE; maybe KPIS para o station.
-A gente so esta vendo data of sala 01, we need to see all the rooms
-Separar os dados com base no historico de partidas? all history? separado
+A gente so esta vendo data of sala 01, we need to see all the rooms (V) N mostra se n completar
+Separar os dados com base no historico de partidas? all history? separado (+ ou -) exportando todos dados e ultimas 2h
 
 
 
