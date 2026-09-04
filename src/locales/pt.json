@@ -17,12 +17,12 @@
       "label_occupation": "Ocupação / Cargo",
       "placeholder_occupation": "Ex: Analista, Estudante, Gerente...",
       "label_company": "Empresa / Instituição",
-      "placeholder_age": "Anos de experiência?",
+      "placeholder_age": "Quantos anos atuando na área?",
       "placeholder_company": "Onde você trabalha/estuda?",
       "alert_name_required": "Por favor, insira pelo menos o seu nome para continuarmos.",
       "btn_submit": "Entrar",
       "btn_cancel": "Cancelar",
-      "age": "Idade"
+      "age": "Anos de Experiência"
     }
   },
   
