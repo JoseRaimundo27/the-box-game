@@ -37,7 +37,9 @@
     "btn_full": "Full Room",
     "btn_enter": "Enter Room",
     "spreadsheet": "Export Spreadsheet",
-    "btn_logout": "Logout"
+    "btn_logout": "Logout",
+    "btn_last_game": "⏱️ Last Game (CSV)",
+    "btn_all_games": "📊 All Games (CSV)"
   },
   "config_modal": {
     "title": "Advanced Room Config:",

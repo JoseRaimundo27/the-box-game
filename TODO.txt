@@ -86,11 +86,11 @@ Separar os dados com base no historico de partidas? all history? separado (+ ou 
 
 14/08:
 Colocar names in the footer. (V)
-Years of experience instead age
+Years of experience instead age (V)
 Delete comparation by rooms (?)
 Completar toda informação dos players
-Translate the buttons
-TRanslate the excel titles, maybe the rroms too
+Translate the buttons (V)
+TRanslate the excel titles, maybe the rooms too - FALTOU ISSO E TIRAR A FUNCIONALIDADE DE WAITING
 
 
 

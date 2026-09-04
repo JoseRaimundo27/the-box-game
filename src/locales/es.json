@@ -36,7 +36,9 @@
     "btn_full": "Sala Llena",
     "btn_enter": "Entrar a la Sala",
     "spreadsheet": "Exportar Hoja de Cálculo",
-    "btn_logout": "Salir"
+    "btn_logout": "Salir",
+    "btn_last_game": "⏱️ Último Partido (CSV)",
+    "btn_all_games": "📊 Todos Los Partidos (CSV)"
   },
   "config_modal": {
     "title": "Configuración Avanzada de la Sala:",

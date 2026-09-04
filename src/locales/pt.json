@@ -36,7 +36,9 @@
     "btn_full": "Sala Cheia",
     "btn_enter": "Entrar na Sala",
     "spreadsheet": "Exportar Planilha",
-    "btn_logout": "Sair"
+    "btn_logout": "Sair",
+    "btn_last_game": "⏱️ Última Partida (CSV)",
+    "btn_all_games": "📊 Todas as Partidas (CSV)"
   },
   "config_modal": {
     "title": "Configuração Avançada da Sala:",

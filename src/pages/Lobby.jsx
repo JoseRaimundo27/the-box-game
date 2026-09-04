@@ -327,7 +327,8 @@ const Lobby = () => {
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#27ae60'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2ecc71'}
               >
-                📊 Todas as Partidas (CSV)
+                {t('lobby.btn_all_games', '📊 Todas as Partidas (CSV)')}
+                
               </button>
 
               {/* BOTÃO ÚLTIMA PARTIDA */}
@@ -350,7 +351,7 @@ const Lobby = () => {
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2980b9'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3498db'}
               >
-                ⏱️ Última Partida (CSV)
+                {t('lobby.btn_last_game', 'última partida (CSV)')}
               </button>
 
               {/* BOTÃO EXPORTAR FEEDBACKS */}
