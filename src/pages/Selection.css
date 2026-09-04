@@ -3,6 +3,10 @@
   margin: 0 auto;
   padding: 40px 20px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; 
+  box-sizing: border-box; 
 }
 
 .stations-grid {

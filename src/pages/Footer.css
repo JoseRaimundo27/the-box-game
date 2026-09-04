@@ -1,0 +1,20 @@
+.app-footer {
+  margin-top: auto;
+  padding: 20px 0 10px 0;
+  border-top: 1px solid #e0e0e0;
+  width: 100%;
+  max-width: 650px;
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  text-align: center;
+  align-self: center;
+}
+
+.footer-title {
+  margin: 0 0 5px 0;
+  font-weight: bold;
+}
+
+.footer-credits {
+  margin: 0;
+}

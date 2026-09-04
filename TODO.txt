@@ -84,8 +84,13 @@ A gente so esta vendo data of sala 01, we need to see all the rooms (V) N mostra
 Separar os dados com base no historico de partidas? all history? separado (+ ou -) exportando todos dados e ultimas 2h
 
 
-
-
+14/08:
+Colocar names in the footer. (V)
+Years of experience instead age
+Delete comparation by rooms (?)
+Completar toda informação dos players
+Translate the buttons
+TRanslate the excel titles, maybe the rroms too
 
 
 

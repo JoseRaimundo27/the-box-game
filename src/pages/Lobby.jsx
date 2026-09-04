@@ -6,6 +6,7 @@ import { useGame } from '../context/GameContext';
 import { useTranslation } from 'react-i18next'; 
 import './Lobby.css';
 import resetData from '../../reset.json'; 
+import Footer from './Footer';
 
 const Lobby = () => {
   const [rooms, setRooms] = useState({});
@@ -299,7 +300,7 @@ const Lobby = () => {
   };
 
   return (
-    <div className="lobby-container">
+    <div className="lobby-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '90vh' }}>
       <div className="lobby-header-actions">
         <h1>{t('lobby.title')}</h1>
         
@@ -404,6 +405,7 @@ const Lobby = () => {
             🚪 {t('lobby.btn_logout', 'Sair')}
           </button>
         </div>
+        
       </div>
       
       <p>{t('lobby.subtitle')}</p>
@@ -553,15 +555,18 @@ const Lobby = () => {
                   </div>
                 </div>
               </fieldset>
-
+              
               <div className="modal-actions-wrapper">
                 <button type="submit" className="btn-modal-save">{t('config_modal.btn_save')}</button>
                 <button type="button" className="btn-modal-close" onClick={() => setIsModalOpen(false)}>{t('config_modal.btn_close')}</button>
               </div>
             </form>
+            
           </div>
         </div>
       )}
+
+      <Footer/>
 
     </div>
   );

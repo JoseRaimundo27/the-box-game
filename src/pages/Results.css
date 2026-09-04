@@ -1,4 +1,14 @@
-.results-container { padding: 40px; max-width: 1200px; margin: 0 auto; background: #f9f9f9; }
+.results-container { 
+    padding: 40px; 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    background: #f9f9f9; 
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ocupa no mínimo a altura inteira da tela */
+    box-sizing: border-box; /* Evita que o padding gere barra de rolagem */
+
+}
 .results-header { text-align: center; margin-bottom: 30px; }
 .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
 .kpi-card { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }

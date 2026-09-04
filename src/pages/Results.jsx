@@ -19,6 +19,7 @@ import {
   Cell,
 } from "recharts";
 import "./Results.css";
+import Footer from "./Footer";
 
 const CONSULTING_COLORS = [
   "#3498db",
@@ -833,8 +834,12 @@ const Results = () => {
               </button>
             </div>
           </div>
+
         </div>
+        
       )}
+
+      <Footer/>
     </div>
   );
 };

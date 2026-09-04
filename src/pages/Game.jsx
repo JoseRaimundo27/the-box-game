@@ -4,6 +4,7 @@ import { ref, onValue, runTransaction } from "firebase/database";
 import { useGame } from "../context/GameContext";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import Footer from './Footer';
 import "./Game.css";
 
 const Game = () => {
@@ -490,6 +491,8 @@ const Game = () => {
     );
             })}
           </div>
+      
+      <Footer/>
         </div>
       );
 };

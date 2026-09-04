@@ -9,6 +9,10 @@
   background-color: #f0f2f5;
   min-height: 100vh;
   overflow-x: hidden; /* Garante que nada escape para os lados */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ocupa no mínimo a altura inteira da tela */
+  box-sizing: border-box; /* Evita que o padding gere barra de rolagem */
 }
 
 .game-header {

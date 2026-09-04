@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import { useTranslation } from 'react-i18next'; // <--- IMPORTANTE: Importando o hook de tradução
 import './Selection.css';
+import Footer from './Footer';
 
 const Selection = () => {
   const { currentRoom, user, setMyStation, myStation } = useGame();
@@ -91,7 +92,10 @@ const Selection = () => {
           {t('selection.waiting_players')}
         </p>
       )}
+
+      <Footer/>
     </div>
+
   );
 };
 
