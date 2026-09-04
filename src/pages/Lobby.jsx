@@ -105,13 +105,13 @@ const Lobby = () => {
       "Date",
       "Room",
       "Round",
-      "Goal_Production",
-      "Production_Delivered",
-      "Taxa_Conclusao_Pct",
+      "Production_Goal",
+      "Delivered_Production",
+      "Completion_Rate_Pct",
       "Lead_Time_Seconds",
-      "WIP_Final",
-      "AVG_WIP",
-      "Final_Cost_WIP"
+      "Final_WIP",
+      "Avg_WIP",
+      "Final_WIP_Cost"
     ];
 
     const rows = records.map(record => {
