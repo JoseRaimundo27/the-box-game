@@ -62,7 +62,10 @@
     "available": "Available",
     "btn_start": "GO TO THE FACTORY",
     "waiting_players": "Waiting for players...",
-    "alert_busy": "This station is busy!"
+    "alert_busy": "This station is busy!",
+    "starting_in": "Starting in",
+    "click_ready": "Mark as ready",
+    "ready":  "Ready"
   },
   "game": {
     "loading": "Loading...",

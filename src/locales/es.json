@@ -61,7 +61,10 @@
     "available": "Disponible",
     "btn_start": "IR A LA FÁBRICA",
     "waiting_players": "Esperando a los jugadores...",
-    "alert_busy": "¡Esta estación ya está ocupada!"
+    "alert_busy": "¡Esta estación ya está ocupada!",
+    "starting_in": "A partir de",
+    "click_ready": "Marcar como listo",
+    "ready":  "Listo"
   },
   "game": {
     "loading": "Cargando...",
