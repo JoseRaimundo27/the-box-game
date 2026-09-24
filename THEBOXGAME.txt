@@ -1,0 +1,16 @@
+Anos de experiencia em que? tirar segundos nomes.
+REsetar salas e nao resetar banco
+Resetar uma sala só na engrenagemzinha
+Deixar como default 2 minutos
+É bom ter um botão para os jogadores derem "ready" e começar a partida.
+Como pegar os graficos no resultado ( gerar graficos do excel)
+Age para years of experience no excel
+
+Problems:
+We want to see the game, like as observator;
+CLass interface inspired by Figma, all rooms in the mainly screen;
+We dont see the graphs results; Maybe print the result;
+Maybe the player can play more than one station;
+Button start coordenation; É bom ter um botão para os jogadores derem "ready" e começar a partida. e um timer decrescente para iniciar o jogo.
+
+

@@ -88,10 +88,14 @@ Separar os dados com base no historico de partidas? all history? separado (+ ou 
 Colocar names in the footer. (V)
 Years of experience instead age (V)
 Delete comparation by rooms (?)
-Completar toda informação dos players
+Completar toda informação dos players 
 Translate the buttons (V)
-TRanslate the excel titles, maybe the rooms too (V)
+TRanslate the excel titles, maybe the rooms too 
 FALTOU TIRAR A FUNCIONALIDADE DE WAITING
+
+04/09:
+FIX SCREEN RESULTS IN CELLPHONE
+PUT 2MINUTES COMO VALOR DEFAULT 
 
 
 

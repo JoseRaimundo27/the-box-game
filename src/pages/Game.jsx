@@ -244,14 +244,23 @@ const Game = () => {
     (prod.wips?.cd || 0) * WIP_STAGE_PRICES.cd +
     (prod.wips?.de || 0) * WIP_STAGE_PRICES.de;
 
-  const handleAction = (type) => {
-    const sLetter = myStation.split("_")[1];
-    const mySpec = specs[myStation];
+  const handleAction = (type, targetLetter) => {
+    // 1. Descobre a letra da estação (A, B, C, D ou E)
+    // Se veio pelo botão (targetLetter), usa ela. Senão, pega do myStation tratando se for array ou string.
+    const sLetter = targetLetter || (
+      Array.isArray(myStation) 
+        ? myStation[0]?.split("_")[1] 
+        : myStation.split("_")[1]
+    );
+
+    // 2. Busca as especificações (regras) exatas da mesa que clicou
+    const sKey = `station_${sLetter}`;
+    const mySpec = specs[sKey];
 
     // ROTA DINÂMICA DE ESCRITA: Grava a produção especificamente no round que está sendo jogado!
     const prodRef = ref(
       db,
-      `rooms/${currentRoom}/rounds/${currentRound}/production`,
+      `rooms/${currentRoom}/rounds/${currentRound}/production`
     );
 
     runTransaction(prodRef, (current) => {
@@ -297,7 +306,7 @@ const Game = () => {
         // Limpa a mesa após o envio
         current.workAreas[sLetter] = { stockItems: 0, wipItems: 0 };
 
-        // 3. TIRAR A "FOTO" PARA O GRÁFICO (AGORA FUNCIONA PARA TODAS AS MESAS)
+        // 3. TIRAR A "FOTO" PARA O GRÁFICO
         const ab = current.wips.ab || 0;
         const bc = current.wips.bc || 0;
         const cd = current.wips.cd || 0;
@@ -312,7 +321,6 @@ const Game = () => {
           count: current.finished_total,
           wip_total: ab + bc + cd + de,
           wip_value: snapshotWipValue,
-          // 👇 Salva a contagem de cada mesa no momento exato do envio!
           stationA: current.station_counts.A,
           stationB: current.station_counts.B,
           stationC: current.station_counts.C,
@@ -321,7 +329,7 @@ const Game = () => {
           timestamp: Date.now(),
         };
 
-        // ROTA DINÂMICA DO HISTÓRICO: Salva o S-curve de forma isolada por round
+        // ROTA DINÂMICA DO HISTÓRICO
         const historyRef = ref(
           db,
           `rooms/${currentRoom}/rounds/${currentRound}/history/${snapshot.timestamp}`
@@ -375,122 +383,125 @@ const Game = () => {
       </div>
 
       <div className="factory-floor">
-        {["A", "B", "C", "D", "E"].map((letter) => {
-          const isMe = myStation === `station_${letter}`;
-          const work = prod.workAreas[letter];
+  {["A", "B", "C", "D", "E"].map((letter) => {
+    const stationKey = `station_${letter}`;
 
-          const composition = getComposition(letter, work);
-          const gabaritoComp = getGabaritoComposition(letter);
+    // 💡 Verificação flexível: Funciona tanto se myStation for Array ou String
+    const isMe = Array.isArray(myStation)
+      ? myStation.includes(stationKey)
+      : myStation === stationKey;
 
-          const totalExpectedBlocks = gabaritoComp.length;
-          const isFull = composition.length === totalExpectedBlocks;
+    const work = prod.workAreas[letter];
+    const composition = getComposition(letter, work);
+    const gabaritoComp = getGabaritoComposition(letter);
 
-          const gridSlotsCount = Math.max(9, totalExpectedBlocks);
+    const totalExpectedBlocks = gabaritoComp.length;
+    const isFull = composition.length === totalExpectedBlocks;
+    const gridSlotsCount = Math.max(9, totalExpectedBlocks);
 
-              return (
-      <React.Fragment key={letter}>
-        <div className={`station-card ${isMe ? "is-me" : ""}`}>
-          <div
-            className="station-label"
-            style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-          >
-            <span>
-              {t("game.station_label")} {letter}
-            </span>
-            
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", fontSize: "0.85em" }}>
-              <span style={{ color: "#2ecc71" }}>
-                {t("game.stock_per_work")}: {config.stockNeeded[letter]}
-              </span>
-              <span style={{ color: "#f39c12", fontWeight: "bold", marginTop: "2px" }}>
-              {t("game.remaining_stock")}: {prod.stocks[letter]}
-              </span>
-            </div>
-          </div>
-
-          <div className="work-bench">
+    return (
+        <React.Fragment key={letter}>
+          <div className={`station-card ${isMe ? "is-me" : ""}`}>
             <div
-              className={`cube-grid ${letter === "E" ? "final-container" : ""}`}
+              className="station-label"
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
             >
-              {[...Array(gridSlotsCount)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`slot ${composition[i] ? `filled ${composition[i]}` : "empty"}`}
-                />
-              ))}
+              <span>
+                {t("game.station_label")} {letter}
+              </span>
+              
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", fontSize: "0.85em" }}>
+                <span style={{ color: "#2ecc71" }}>
+                  {t("game.stock_per_work")}: {config.stockNeeded[letter]}
+                </span>
+                <span style={{ color: "#f39c12", fontWeight: "bold", marginTop: "2px" }}>
+                  {t("game.remaining_stock")}: {prod.stocks[letter]}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <div className="station-controls">
-            {letter !== "A" && (
+            <div className="work-bench">
+              <div className={`cube-grid ${letter === "E" ? "final-container" : ""}`}>
+                {[...Array(gridSlotsCount)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`slot ${composition[i] ? `filled ${composition[i]}` : "empty"}`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="station-controls">
+              {letter !== "A" && (
+                <button
+                  disabled={
+                    !isMe ||
+                    work.wipItems > 0 ||
+                    prod.wips[specs[stationKey].prevWip] <= 0
+                  }
+                  /* 💡 Passa 'letter' para saber qual estação puxou o WIP */
+                  onClick={() => handleAction("WIP", letter)}
+                  title={t("game.btn_wip")}
+                  style={{ fontSize: "1.3rem", padding: "6px 12px" }}
+                >
+                  WIP
+                </button>
+              )}
+
               <button
                 disabled={
                   !isMe ||
-                  work.wipItems > 0 ||
-                  prod.wips[specs[`station_${letter}`].prevWip] <= 0
+                  work.stockItems >= specs[stationKey].stockNeeded ||
+                  prod.stocks[letter] <= 0
                 }
-                onClick={() => handleAction("WIP")}
-                title={t("game.btn_wip")}
+                /* 💡 Passa 'letter' para saber qual estação pegou do Estoque */
+                onClick={() => handleAction("STOCK", letter)}
+                title={t("game.btn_stock")}
+                style={{ fontSize: "1.1rem", padding: "6px 12px" }}
+              >
+                ⬆️ 
+              </button>
+
+              <button
+                className="btn-send"
+                disabled={!isMe || !isFull}
+                /* 💡 Passa 'letter' para enviar da estação correta */
+                onClick={() => handleAction("SEND", letter)}
+                title={t("game.btn_send")}
                 style={{ fontSize: "1.3rem", padding: "6px 12px" }}
               >
-                WIP
+                ➡️
               </button>
-            )}
-
-            <button
-              disabled={
-                !isMe ||
-                work.stockItems >= specs[`station_${letter}`].stockNeeded ||
-                prod.stocks[letter] <= 0
-              }
-              onClick={() => handleAction("STOCK")}
-              title={t("game.btn_stock")}
-              style={{ fontSize: "1.1rem", padding: "6px 12px" }}
-            >
-              ⬆️ 
-            </button>
-
-            <button
-              className="btn-send"
-              disabled={!isMe || !isFull}
-              onClick={() => handleAction("SEND")}
-              title={t("game.btn_send")}
-              style={{ fontSize: "1.3rem", padding: "6px 12px" }}
-            >
-              ➡️
-            </button>
-          </div>
-
-          <div className="reference-gabarito">
-            <div className="gabarito-title">
-              {t("game.gabarito_title")}
             </div>
-            <div
-              className={`cube-grid gabarito-grid ${letter === "E" ? "final-container-ref" : ""}`}
-            >
-              {[...Array(gridSlotsCount)].map((_, i) => (
-                <div
-                  key={`g-${i}`}
-                  className={`slot slot-gabarito ${gabaritoComp[i] ? `filled ${gabaritoComp[i]}` : "empty-gabarito"}`}
-                />
-              ))}
+
+            <div className="reference-gabarito">
+              <div className="gabarito-title">
+                {t("game.gabarito_title")}
+              </div>
+              <div className={`cube-grid gabarito-grid ${letter === "E" ? "final-container-ref" : ""}`}>
+                {[...Array(gridSlotsCount)].map((_, i) => (
+                  <div
+                    key={`g-${i}`}
+                    className={`slot slot-gabarito ${gabaritoComp[i] ? `filled ${gabaritoComp[i]}` : "empty-gabarito"}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        {letter !== "E" && (
-          <div className="wip-flow-indicator">
-            <div className="wip-triangle">
-              <span className="wip-value">
-                {prod.wips[specs[`station_${letter}`].nextWip]}
-              </span>
+          {letter !== "E" && (
+            <div className="wip-flow-indicator">
+              <div className="wip-triangle">
+                <span className="wip-value">
+                  {prod.wips[specs[stationKey].nextWip]}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
-      </React.Fragment>
-    );
-            })}
-          </div>
+          )}
+        </React.Fragment>
+      );
+    })}
+  </div>
       
       <Footer/>
         </div>

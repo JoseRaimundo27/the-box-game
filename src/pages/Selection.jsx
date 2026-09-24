@@ -27,21 +27,34 @@ const Selection = () => {
     return () => unsubscribe();
   }, [currentRoom, navigate]);
 
+  useEffect(() => {
+    if (roomData?.players && user?.uid) {
+      const myStationsList = Object.keys(roomData.players).filter(
+        (sKey) => roomData.players[sKey].uid === user.uid
+      );
+      setMyStation(myStationsList);
+    }
+  }, [roomData, user, setMyStation]);
+
   const selectStation = (stationKey) => {
     const stationRef = ref(db, `rooms/${currentRoom}/players/${stationKey}`);
+    const storedName = sessionStorage.getItem('playerName') || "Jogador";
 
     runTransaction(stationRef, (currentData) => {
-      if (currentData && currentData.uid !== "") {
-        return; 
+      if (!currentData) return { uid: user.uid, name: storedName };
+
+      // Se a estação já pertence a este jogador -> DESMARCA (libera a estação)
+      if (currentData.uid === user.uid) {
+        return { uid: "", name: "" };
       }
-      return { uid: user.uid, name: "Jogador" }; 
-    }).then((result) => {
-      if (result.committed) {
-        setMyStation(stationKey);
-      } else {
-        // Alerta traduzido para caso a estação seja ocupada no milissegundo anterior
-        alert(t('selection.alert_busy')); 
+
+      // Se a estação estiver livre -> SELECIONA para o jogador
+      if (currentData.uid === "") {
+        return { uid: user.uid, name: storedName };
       }
+
+      // Se pertence a outro jogador -> não altera nada
+      return;
     });
   };
 
@@ -49,18 +62,19 @@ const Selection = () => {
   if (!roomData) return <div className="loading">{t('selection.loading')}</div>;
 
   const stations = ['station_A', 'station_B', 'station_C', 'station_D', 'station_E'];
-  const allReady = stations.every(s => roomData.players[s].uid !== "");
+  const allReady = stations.every((s) => roomData.players[s]?.uid !== "");
 
   return (
     <div className="selection-container">
-      {/* Título e subtítulos traduzidos */}
+      {/* Título e subtítulos */}
       <h2>{t('selection.room_title')} {currentRoom.toUpperCase()}</h2>
       <p>{t('selection.subtitle')}</p>
 
       <div className="stations-grid">
         {stations.map((s) => {
-          const isOccupied = roomData.players[s].uid !== "";
-          const isMine = roomData.players[s].uid === user?.uid;
+          const player = roomData.players[s];
+          const isMine = player?.uid === user?.uid;
+          const isOccupied = player?.uid !== "" && !isMine;
 
           return (
             <div 
@@ -69,18 +83,20 @@ const Selection = () => {
               onClick={() => !isOccupied && selectStation(s)}
             >
               <span className="station-name">{s.split('_')[1]}</span>
-              {/* Status das caixas traduzidos dinamicamente */}
+              {/* Status traduzido dinamicamente */}
               <small>
-                {isOccupied 
-                  ? (isMine ? t('selection.you') : t('selection.occupied')) 
-                  : t('selection.available')}
+                {isMine 
+                  ? t('selection.you') 
+                  : isOccupied 
+                    ? t('selection.occupied') 
+                    : t('selection.available')}
               </small>
             </div>
           );
         })}
       </div>
 
-      {/* Botão de início e texto de espera traduzidos */}
+      {/* Botão de início e texto de espera */}
       {allReady && (
         <button className="btn-start" onClick={() => navigate('/game')}>
           {t('selection.btn_start')}
@@ -93,9 +109,8 @@ const Selection = () => {
         </p>
       )}
 
-      <Footer/>
+      <Footer />
     </div>
-
   );
 };
 
