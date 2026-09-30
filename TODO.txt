@@ -114,7 +114,6 @@ Maybe the player can play more than one station; (V)
 Button start coordenation; É bom ter um botão para os jogadores derem "ready" e começar a partida. e um timer decrescente para iniciar o jogo.
 Criar entre as stations
 criar um botao para externalizar o png
-falta traduzir os "readys"
 
 
 

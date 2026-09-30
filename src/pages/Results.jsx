@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
+import html2canvas from 'html2canvas';
 import { db } from "../firebase/config";
-import { ref, onValue, update, push, set, runTransaction } from "firebase/database";
+import { ref, onValue, update, push, set, runTransaction , get} from "firebase/database";
 import { useGame } from "../context/GameContext";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -54,6 +55,9 @@ const Results = () => {
   // ESTADOS DO FEEDBACK (Novo)
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedback, setFeedback] = useState({ rating: 0, comment: "" });
+
+  const chartsRef = useRef(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -315,6 +319,49 @@ const Results = () => {
     return () => unsubscribe();
   }, [currentRoom, i18n.language, navigate]);
 
+  // Função para gerar e enviar a imagem para o banco
+  useEffect(() => {
+    const autoSaveChartToDatabase = async () => {
+      if (!chartsRef.current || !currentRoom || !currentRound) return;
+
+      try {
+        const chartPath = `rooms/${currentRoom}/rounds/${currentRound}/savedChart`;
+        const chartRef = ref(db, chartPath);
+
+        // 1. Evita salvar duplicado se já existir no banco
+        const snapshot = await get(chartRef);
+        if (snapshot.exists()) return; 
+
+        setIsSaving(true);
+
+        // Delay de 2 segundos (2000ms) para o gráfico renderizar e concluir a animação
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        // Converte os gráficos para imagem
+        const canvas = await html2canvas(chartsRef.current, {
+          backgroundColor: '#ffffff',
+          scale: 1.5,
+        });
+
+        const imageDataUrl = canvas.toDataURL('image/png');
+
+        // 3. Grava no Firebase
+        await set(chartRef, {
+          imageData: imageDataUrl,
+          createdAt: Date.now(),
+        });
+
+        setIsSaving(false);
+      } catch (error) {
+        console.error('Erro ao salvar imagem no Firebase:', error);
+        setIsSaving(false);
+      }
+    };
+
+    autoSaveChartToDatabase();
+  }, [currentRoom, currentRound]);
+
+
   // FUNÇÃO INTERCEPTADORA DE SAÍDA / FIM
   const handleExitOrFeedback = () => {
     const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
@@ -544,7 +591,7 @@ const Results = () => {
       )}
 
       {/* GRÁFICOS INDIVIDUAIS DA SALA NO ROUND ATUAL */}
-      <div className="charts-section">
+      <div className="charts-section" ref={chartsRef}>
         <div className="chart-box">
           <h2>{t("results.charts.s_curve_title")}</h2>
           <div style={{ width: "100%", height: 300 }}>

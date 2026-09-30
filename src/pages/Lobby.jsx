@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
 import { ref, onValue, set, get } from 'firebase/database';
+import JSZip from 'jszip';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import { useTranslation } from 'react-i18next'; 
@@ -17,6 +18,7 @@ const Lobby = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState('');
   const [activeTab, setActiveTab] = useState(1); 
+  const [isExportingCharts, setIsExportingCharts] = useState(false);
   
   const defaultRoundConfig = {
     prices: { A: 1, B: 2, C: 3, D: 4, E: 5 },
@@ -168,38 +170,6 @@ const Lobby = () => {
     }
   };
 
-  // 2. EXPORTAR APENAS A ÚLTIMA PARTIDA/SESSÃO
-  const handleExportLatestCSV = async () => {
-    try {
-      const historyRef = ref(db, 'match_history');
-      const snapshot = await get(historyRef);
-      const historyData = snapshot.val();
-
-      if (!historyData) {
-        alert("Nenhum dado de histórico de partidas foi encontrado para exportação.");
-        return;
-      }
-
-      const records = parseMatchRecords(historyData);
-
-      if (records.length === 0) {
-        alert("Nenhum registro válido de partida foi encontrado.");
-        return;
-      }
-
-      // Identifica o timestamp mais recente registrado
-      const maxTimestamp = Math.max(...records.map(r => r.timestamp));
-      
-      // Filtra os registros gerados na janela da última partida (últimas 2 horas do último registro)
-      const latestRecords = records.filter(r => (maxTimestamp - r.timestamp) <= 7200000);
-
-      generateCSVDownload(latestRecords, "historico_ultima_partida");
-    } catch (error) {
-      console.error("Erro ao gerar planilha da última partida:", error);
-      alert("Ocorreu um erro técnico ao gerar a planilha de exportação.");
-    }
-  };
-
   // EXPORTAR FEEDBACKS DOS JOGADORES
   const handleExportFeedbackCSV = async () => {
     try {
@@ -277,6 +247,58 @@ const Lobby = () => {
     setIsModalOpen(true);
   };
 
+  // ==========================================
+  // EXPORTAR GRÁFICOS (savedChart) DA SALA EM ZIP
+  // ==========================================
+  // Retorna [{ round, imageData }] apenas dos rounds que já têm gráfico salvo
+  const getSavedCharts = (roomRounds) => {
+    if (!roomRounds || typeof roomRounds !== 'object') return [];
+    // Object.entries funciona tanto para objeto quanto para array (Firebase converte chaves 1,2,3... em array)
+    return Object.entries(roomRounds)
+      .filter(([, roundData]) => roundData?.savedChart?.imageData)
+      .map(([roundKey, roundData]) => ({
+        round: roundKey,
+        imageData: roundData.savedChart.imageData,
+      }))
+      .sort((a, b) => Number(a.round) - Number(b.round));
+  };
+
+  const handleExportRoomCharts = async () => {
+    if (!selectedRoomId) return;
+    setIsExportingCharts(true);
+    try {
+      const snapshot = await get(ref(db, `rooms/${selectedRoomId}/rounds`));
+      const charts = getSavedCharts(snapshot.val());
+
+      if (charts.length === 0) {
+        alert("Esta sala ainda não possui gráficos salvos. É preciso jogar ao menos um round primeiro.");
+        return;
+      }
+
+      const zip = new JSZip();
+      charts.forEach(({ round, imageData }) => {
+        // imageData vem como "data:image/png;base64,XXXX" -> pega só a parte base64
+        const base64 = imageData.includes(',') ? imageData.split(',')[1] : imageData;
+        zip.file(`${selectedRoomId}_round_${round}.png`, base64, { base64: true });
+      });
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `graficos_${selectedRoomId}_${Date.now()}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Erro ao exportar gráficos da sala:", error);
+      alert("Ocorreu um erro técnico ao exportar os gráficos da sala.");
+    } finally {
+      setIsExportingCharts(false);
+    }
+  };
+
   const handleSaveConfig = async (e) => {
     e.preventDefault();
     try {
@@ -298,6 +320,10 @@ const Lobby = () => {
     if (!playersObj) return 0;
     return Object.values(playersObj).filter(p => p.uid !== "").length;
   };
+
+  // Usa os dados ao vivo de `rooms` para saber se a sala selecionada já tem gráficos salvos
+  const savedChartsCount = selectedRoomId ? getSavedCharts(rooms[selectedRoomId]?.rounds).length : 0;
+  const hasSavedCharts = savedChartsCount > 0;
 
   return (
     <div className="lobby-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '90vh' }}>
@@ -331,28 +357,6 @@ const Lobby = () => {
                 
               </button>
 
-              {/* BOTÃO ÚLTIMA PARTIDA */}
-              <button 
-                className="btn-latest-export" 
-                onClick={handleExportLatestCSV}
-                style={{
-                  backgroundColor: '#3498db',
-                  color: '#fff',
-                  border: 'none',
-                  padding: '10px 15px',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2980b9'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3498db'}
-              >
-                {t('lobby.btn_last_game', 'última partida (CSV)')}
-              </button>
 
               {/* BOTÃO EXPORTAR FEEDBACKS */}
               <button 
@@ -557,6 +561,35 @@ const Lobby = () => {
                 </div>
               </fieldset>
               
+              {/* EXPORTAR GRÁFICOS DA SALA (só habilita se a sala já foi jogada) */}
+              <fieldset>
+                <legend>Gráficos da sala</legend>
+                <button
+                  type="button"
+                  onClick={handleExportRoomCharts}
+                  disabled={!hasSavedCharts || isExportingCharts}
+                  title={hasSavedCharts ? 'Baixar ZIP com os gráficos de todos os rounds jogados' : 'Disponível após a sala ser jogada'}
+                  style={{
+                    backgroundColor: hasSavedCharts ? '#8e44ad' : '#bdc3c7',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '10px 15px',
+                    borderRadius: '5px',
+                    cursor: hasSavedCharts && !isExportingCharts ? 'pointer' : 'not-allowed',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {isExportingCharts
+                    ? 'Gerando ZIP...'
+                    : `🖼️ Exportar gráficos (ZIP)${hasSavedCharts ? ` — ${savedChartsCount} round(s)` : ''}`}
+                </button>
+                {!hasSavedCharts && (
+                  <small style={{ display: 'block', marginTop: '6px', color: '#95a5a6' }}>
+                    Esta sala ainda não foi jogada.
+                  </small>
+                )}
+              </fieldset>
+
               <div className="modal-actions-wrapper">
                 <button type="submit" className="btn-modal-save">{t('config_modal.btn_save')}</button>
                 <button type="button" className="btn-modal-close" onClick={() => setIsModalOpen(false)}>{t('config_modal.btn_close')}</button>
