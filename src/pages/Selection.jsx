@@ -72,35 +72,45 @@ const Selection = () => {
 
   // Função para selecionar/deselecionar a mesa
   const selectStation = (stationKey) => {
+    if (!user?.uid) return; // Segurança extra: impede a acção se não houver um utilizador válido
+
     const stationRef = ref(db, `rooms/${currentRoom}/players/${stationKey}`);
     const storedName = sessionStorage.getItem('playerName') || "Jogador";
 
     runTransaction(stationRef, (currentData) => {
-      if (!currentData) return { uid: user.uid, name: storedName, isReady: false };
+      // Evita o problema do Firebase reescrever a estação quando o cache local está vazio (null)
+      if (currentData === null) return currentData;
 
-      // Se a estação já pertence a este jogador -> DESMARCA
+      // Se a estação já pertence estritamente a este jogador -> DESMARCA
       if (currentData.uid === user.uid) {
         return { uid: "", name: "", isReady: false };
       }
 
-      // Se a estação estiver livre -> SELECIONA
+      // Se a estação estiver estritamente livre -> SELECIONA
       if (currentData.uid === "") {
         return { uid: user.uid, name: storedName, isReady: false };
       }
 
-      return;
+      // Se a estação pertence a OUTRO jogador, devolve os dados intactos (não faz nada)
+      return currentData; 
     });
   };
 
   // Função para alternar o status de PRONTO
   const toggleReady = (e, stationKey, currentReadyStatus) => {
     e.stopPropagation(); // Evita que o clique desmarque a mesa
+    if (!user?.uid) return;
 
     const stationRef = ref(db, `rooms/${currentRoom}/players/${stationKey}`);
+    
     runTransaction(stationRef, (currentData) => {
-      if (currentData && currentData.uid === user.uid) {
+      if (currentData === null) return currentData;
+
+      // Confirma na base de dados que apenas o DONO da estação pode alterar o "Ready"
+      if (currentData.uid === user.uid) {
         currentData.isReady = !currentReadyStatus;
       }
+      
       return currentData;
     });
   };
@@ -117,7 +127,8 @@ const Selection = () => {
       <div className="stations-grid">
         {stations.map((s) => {
           const player = roomData.players[s];
-          const isMine = player?.uid === user?.uid;
+          // Assegura que o uid existe antes de validar a propriedade
+          const isMine = player?.uid === user?.uid && user?.uid != null;
           const isOccupied = player?.uid !== "" && !isMine;
           const isReady = player?.isReady === true;
 
@@ -125,7 +136,12 @@ const Selection = () => {
             <div 
               key={s} 
               className={`station-card ${isOccupied ? 'occupied' : ''} ${isMine ? 'selected' : ''} ${isReady ? 'ready-glow' : ''}`}
-              onClick={() => !isOccupied && selectStation(s)}
+              // Bloqueia a chamada da função se estiver ocupada
+              onClick={() => {
+                if (!isOccupied) {
+                  selectStation(s);
+                }
+              }}
             >
               <span className="station-name">{s.split('_')[1]}</span>
               
@@ -137,7 +153,7 @@ const Selection = () => {
                     : t('selection.available', 'Livre')}
               </small>
 
-              {/* Botão de Ready apenas para o dono da estação */}
+              {/* Botão de Ready apenas para o dono da estação[cite: 1] */}
               {isMine && (
                 <button 
                   className={`btn-ready-station ${isReady ? 'active' : ''}`}
@@ -147,7 +163,7 @@ const Selection = () => {
                 </button>
               )}
 
-              {/* Indicador visual para outras mesas que já estão prontas */}
+              {/* Indicador visual para outras mesas que já estão prontas[cite: 1] */}
               {isOccupied && isReady && (
                 <div className="ready-badge">✅ {t('selection.ready', 'Pronto')}</div>
               )}
