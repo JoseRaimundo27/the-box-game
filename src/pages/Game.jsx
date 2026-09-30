@@ -31,7 +31,7 @@ const Game = () => {
     prices: { A: 1, B: 2, C: 3, D: 4, E: 5 },
     stockNeeded: { A: 1, B: 3, C: 1, D: 2, E: 2 }, // Atualizado para o padrão 13123
     productionGoal: 100,
-    timeLimit: 300,
+    timeLimit: 20,
   };
 
   const ITEM_PRICES = config.prices;
@@ -197,9 +197,16 @@ const Game = () => {
 
     // Função interna para salvar o término oficial do round no Firebase
     const finalizeRound = () => {
-      const roundRef = ref(db, `rooms/${currentRoom}/rounds/${currentRound}`);
+      // Escrita atômica: marca o fim do round E zera o "Pronto" de todas as estações.
+      // Assim a tela de Results sempre começa com todos "não prontos" (inclusive no Round 1,
+      // que herdava o isReady=true do lobby/Selection).
+      const updates = {};
+      updates[`rooms/${currentRoom}/rounds/${currentRound}/isOver`] = true; // Alerta global de fim de round
+      ["station_A", "station_B", "station_C", "station_D", "station_E"].forEach((s) => {
+        updates[`rooms/${currentRoom}/players/${s}/isReady`] = false;
+      });
       import("firebase/database").then(({ update }) => {
-        update(roundRef, { isOver: true }); // Alerta global de fim de round
+        update(ref(db), updates);
       });
     };
 

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { db } from "../firebase/config";
-import { ref, onValue, update, push, set } from "firebase/database";
+import { ref, onValue, update, push, set, runTransaction } from "firebase/database";
 import { useGame } from "../context/GameContext";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -32,7 +32,7 @@ const CONSULTING_COLORS = [
 ];
 
 const Results = () => {
-  const { currentRoom } = useGame();
+  const { currentRoom, user } = useGame();
   const [data, setData] = useState([]);
   const [comparativeData, setComparativeData] = useState([]);
   const [comparativeRoundsData, setComparativeRoundsData] = useState([]);
@@ -58,6 +58,9 @@ const Results = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
+  const [roomPlayers, setRoomPlayers] = useState(null);
+  const [countdown, setCountdown] = useState(null);
+
   const getRoomColor = (roomId, index) => {
     if (roomId === (currentRoom || "sala_01")) return "#3498db";
     return CONSULTING_COLORS[(index + 1) % CONSULTING_COLORS.length];
@@ -72,6 +75,8 @@ const Results = () => {
 
       const roomID = currentRoom || "sala_01";
       const localRoom = allRooms[roomID];
+
+      setRoomPlayers(localRoom?.players || null);
 
       if (localRoom?.metadata?.status === "PLAYING") {
         navigate('/game');
@@ -321,23 +326,6 @@ const Results = () => {
     }
   };
 
-  // FUNÇÃO PARA AVANÇAR DE ROUND
-  const handleNextRound = () => {
-    if (currentRound < 4) {
-      const roomID = currentRoom || "sala_01";
-      const metaRef = ref(db, `rooms/${roomID}/metadata`);
-      
-      update(metaRef, { 
-        currentRound: currentRound + 1,
-        startedAt: Date.now() 
-      }).then(() => {
-        navigate("/game");
-      });
-    } else {
-      handleExitOrFeedback();
-    }
-  };
-
   // ENVIAR FEEDBACK PARA O FIREBASE
   const submitFeedback = async () => {
     const feedbacksRef = ref(db, 'player_feedbacks');
@@ -364,6 +352,80 @@ const Results = () => {
     }
   };
 
+  // Alterna o status de Pronto simultaneamente para TODAS as estações que o usuário controla
+  const toggleRoundReady = () => {
+    if (!user?.uid) return;
+    const roomPlayersRef = ref(db, `rooms/${currentRoom}/players`);
+    
+    runTransaction(roomPlayersRef, (players) => {
+      if (players) {
+        // Encontra todas as estações do usuário atual
+        const myStations = Object.keys(players).filter(k => players[k].uid === user.uid);
+        if (myStations.length > 0) {
+          // Usa a primeira estação como base para saber se está ativando ou desativando o ready
+          const isCurrentlyReady = players[myStations[0]].isReady;
+          myStations.forEach(sKey => {
+            players[sKey].isReady = !isCurrentlyReady;
+          });
+        }
+      }
+      return players;
+    });
+  };
+
+  // Avalia se as 5 estações estão prontas para iniciar a contagem
+  useEffect(() => {
+    if (!roomPlayers) return;
+    
+    const stations = ['station_A', 'station_B', 'station_C', 'station_D', 'station_E'];
+    const allReady = stations.every(s => roomPlayers[s]?.uid !== "" && roomPlayers[s]?.isReady === true);
+    
+
+    if (allReady && isRoundOver && currentRound < 4) {
+      setCountdown(5);
+    } else {
+      setCountdown(null);
+    }
+  }, [roomPlayers, isRoundOver, currentRound]);
+
+  // Executa o timer e avança o round
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown === 0) {
+      executeNextRound();
+      return;
+    }
+    const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
+  
+  // Função que substitui a antiga handleNextRound
+  const executeNextRound = () => {
+    if (currentRound < 4) {
+      const roomID = currentRoom || "sala_01";
+      const updates = {};
+      
+      updates[`rooms/${roomID}/metadata/currentRound`] = currentRound + 1;
+      updates[`rooms/${roomID}/metadata/startedAt`] = Date.now();
+      
+      // Limpa o status de Ready de todas as mesas para o novo round
+      ['station_A', 'station_B', 'station_C', 'station_D', 'station_E'].forEach(s => {
+        updates[`rooms/${roomID}/players/${s}/isReady`] = false;
+      });
+
+      update(ref(db), updates).then(() => {
+        navigate("/game");
+      });
+    }
+  };
+
+  // Variáveis auxiliares para o botão
+  const myStations = roomPlayers ? Object.keys(roomPlayers).filter(k => roomPlayers[k].uid === user?.uid) : [];
+  const amIReady = myStations.length > 0 ? roomPlayers[myStations[0]].isReady : false;
+  const readyCount = roomPlayers ? ['station_A', 'station_B', 'station_C', 'station_D', 'station_E'].filter(s => roomPlayers[s]?.isReady).length : 0;
+
+  
   return (
     <div className="results-container">
       <header className="results-header">
@@ -732,64 +794,80 @@ const Results = () => {
       )}
 
       {/* BOTÕES DE AÇÃO: AVANÇAR OU FINALIZAR */}
+      {/* BOTÕES DE AÇÃO: AVANÇAR OU FINALIZAR */}
       <div
         className="results-actions"
         style={{
           display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
           gap: "15px",
           marginTop: "20px",
-          justifyContent: "center",
         }}
       >
-        {currentRound < 4 ? (
+        {/* Lógica para Rounds 1, 2 e 3 */}
+        {currentRound < 4 && isRoundOver && (
+          <div className="ready-system-container" style={{ textAlign: 'center', width: '100%', marginBottom: '15px' }}>
+            {countdown !== null ? (
+              <h2 style={{ color: '#e74c3c', margin: '0' }}>
+                {t("selection.starting_in", "Iniciando próximo round em")} {countdown}...
+              </h2>
+            ) : (
+              <>
+                <button
+                  className="restart-btn"
+                  style={{ 
+                    backgroundColor: amIReady ? '#2ecc71' : '#f1c40f', 
+                    fontSize: "1.2rem",
+                    padding: "15px 30px"
+                  }}
+                  onClick={toggleRoundReady}
+                >
+                  {amIReady 
+                    ? "✅ " + t("selection.ready", "Pronto (Aguardando outros...)") 
+                    : t("selection.click_ready", "Dar Pronto para o Próximo Round")}
+                </button>
+                <p style={{ marginTop: '10px', fontSize: '1rem', color: '#7f8c8d', fontWeight: 'bold' }}>
+                  {readyCount}/5 estações prontas
+                </p>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Lógica Exclusiva para Finalizar no Round 4 */}
+        {currentRound === 4 && isRoundOver && (
           <button
             className="restart-btn"
             style={{ 
-              backgroundColor: isRoundOver ? "#2ecc71" : "#bdc3c7", 
-              fontSize: "1.1rem",
-              cursor: isRoundOver ? "pointer" : "not-allowed"
+              backgroundColor: "#e74c3c", 
+              fontSize: "1.1rem"
             }}
-            onClick={handleNextRound}
-            disabled={!isRoundOver}
+            onClick={handleExitOrFeedback}
           >
-            {isRoundOver 
-              ? t("results.actions.next_round", `Iniciar Round ${currentRound + 1}`) + " ➔"
-              : t("results.actions.waiting", "Aguardando fim do Round...")}
-          </button>
-        ) : (
-          <button
-            className="restart-btn"
-            style={{ 
-              backgroundColor: isRoundOver ? "#e74c3c" : "#bdc3c7", 
-              fontSize: "1.1rem",
-              cursor: isRoundOver ? "pointer" : "not-allowed"
-            }}
-            onClick={handleNextRound}
-            disabled={!isRoundOver}
-          >
-            {isRoundOver
-              ? t("results.actions.finish_simulation", "Finalizar Simulação")
-              : t("results.actions.waiting", "Aguardando fim do Round...")}
+            {t("results.actions.finish_simulation", "Finalizar Simulação")}
           </button>
         )}
 
-        {!isRoundOver && (
+        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+          {!isRoundOver && (
+            <button
+              className="restart-btn"
+              style={{ backgroundColor: "#3498db", fontSize: "1.1rem" }}
+              onClick={() => navigate("/game")}
+            >
+              Voltar para a Fábrica
+            </button>
+          )}
+
           <button
             className="restart-btn"
-            style={{ backgroundColor: "#3498db", fontSize: "1.1rem" }}
-            onClick={() => navigate("/game")}
+            style={{ backgroundColor: "#95a5a6" }}
+            onClick={handleExitOrFeedback}
           >
-            Voltar para a Fábrica
+            {t("results.actions.btn_new_game", "Sair para o Menu")}
           </button>
-        )}
-
-        <button
-          className="restart-btn"
-          style={{ backgroundColor: "#95a5a6" }}
-          onClick={handleExitOrFeedback}
-        >
-          {t("results.actions.btn_new_game", "Sair para o Menu")}
-        </button>
+        </div>
       </div>
 
       {/* MODAL DE FEEDBACK (VISÍVEL APENAS PARA JOGADORES NO FIM DA SIMULAÇÃO) */}

@@ -22,7 +22,7 @@ const Lobby = () => {
     prices: { A: 1, B: 2, C: 3, D: 4, E: 5 },
     stockNeeded: { A: 1, B: 3, C: 1, D: 2, E: 2 }, 
     productionGoal: 100,
-    timeLimit: 300 
+    timeLimit: 20 
   };
 
   const [roundsConfig, setRoundsConfig] = useState({
